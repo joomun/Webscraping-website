@@ -1,0 +1,8 @@
+https://gg.deals/game/production-line/
+
+scraping website
+
+1. https://store.steampowered.com/robots.txt
+2. https://www.gog.com/robots.txt
+3. https://www.gamivo.com/robots.txt
+4. https://k4g.com/robots.txt
