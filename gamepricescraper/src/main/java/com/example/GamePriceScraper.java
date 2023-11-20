@@ -18,7 +18,7 @@ public class GamePriceScraper {
 
     private static void scrapeSteam() {
         // Replace with the actual URL and CSS selectors for Steam
-        scrapeWebsite("https://store.steampowered.com/", "CSS_SELECTOR_FOR_STEAM");
+        scrapeWebsite("https://store.steampowered.com/app/1551360/Forza_Horizon_5/", "div.game_purchase_price.price[data-price-final]");
     }
 
     private static void scrapeGOG() {
