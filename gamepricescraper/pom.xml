@@ -35,7 +35,19 @@
         <version>1.14.1</version>
     </dependency>
 
+    <!-- Selenium WebDriver -->
+    <dependency>
+        <groupId>org.seleniumhq.selenium</groupId>
+        <artifactId>selenium-java</artifactId>
+        <version>3.141.59</version> <!-- Use the latest version available -->
+    </dependency>
 
+    <!-- WebDriver Manager (to automatically manage driver binaries) -->
+    <dependency>
+        <groupId>io.github.bonigarcia</groupId>
+        <artifactId>webdrivermanager</artifactId>
+        <version>4.4.3</version> <!-- Use the latest version available -->
+    </dependency>
 
   </dependencies>
 </project>
