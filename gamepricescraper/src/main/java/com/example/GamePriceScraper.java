@@ -8,10 +8,10 @@ import org.jsoup.select.Elements;
 
 
 public class GamePriceScraper {
+	
     public static void main(String[] args) {
         scrapeSteam();
         scrapeGOG();
-        scrapeGamivo();
         scrapeK4g();
         scrapeAmazon();
     }
@@ -26,10 +26,7 @@ public class GamePriceScraper {
         scrapeWebsite("https://www.gog.com/", "CSS_SELECTOR_FOR_GOG");
     }
 
-    private static void scrapeGamivo() {
-        // Replace with the actual URL and CSS selectors for Gamivo
-        scrapeWebsite("https://www.gamivo.com/", "CSS_SELECTOR_FOR_GAMIVO");
-    }
+
 
     private static void scrapeK4g() {
         // Replace with the actual URL and CSS selectors for K4g
@@ -43,8 +40,18 @@ public class GamePriceScraper {
 
     private static void scrapeWebsite(String url, String cssSelector) {
         try {
-            Document document = Jsoup.connect(url).get();
+        	Document document = Jsoup.connect(url)
+        			  .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+        			  .referrer("http://www.google.com")
+        			  .timeout(10 * 1000) // 10 seconds
+        			  .header("Accept", "text/html")
+		        	  .header("Accept-Encoding", "gzip, deflate, br")
+		        	  .header("Accept-Language", "en-US,en;q=0.5")
+		        	  .header("Connection", "keep-alive")
+		        	  .get();
+
             Elements elements = document.select(cssSelector);
+            
 
             for (Element element : elements) {
                 // Extract and process data from each element
