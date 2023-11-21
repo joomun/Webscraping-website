@@ -49,5 +49,20 @@
         <version>4.4.3</version> <!-- Use the latest version available -->
     </dependency>
 
+	<!-- SLF4J's binding for Logback -->
+	<dependency>
+	    <groupId>ch.qos.logback</groupId>
+	    <artifactId>logback-classic</artifactId>
+	    <version>1.2.3</version> <!-- Use the latest version available -->
+	</dependency>
+	
+	<!-- SLF4J's binding for log4j -->
+	<dependency>
+	    <groupId>org.slf4j</groupId>
+	    <artifactId>slf4j-log4j12</artifactId>
+	    <version>1.7.30</version> <!-- Use the latest version available -->
+	</dependency>
+
+
   </dependencies>
 </project>

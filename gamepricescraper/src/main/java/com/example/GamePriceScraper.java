@@ -12,58 +12,31 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+
 
 public class GamePriceScraper {
 	
     public static void main(String[] args) {
     	
-        ExecutorService executorService = Executors.newFixedThreadPool(4); // Thread pool with 4 threads
+        ExecutorService executorService = Executors.newFixedThreadPool(5); // Correct number of threads if needed
 
         WebDriverManager.chromedriver().browserVersion("119.0.6045.160").setup();
 
         // Submit each scrape task to the executor service
-        executorService.submit(GamePriceScraper::scrapeSteam);
-        executorService.submit(GamePriceScraper::scrapeGOG);
-        executorService.submit(GamePriceScraper::scrapeK4g);
-        executorService.submit(GamePriceScraper::scrapeAmazon);
-        executorService.submit(GamePriceScraper::scrapeSteamAction);
-        executorService.shutdown(); // Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted
+        executorService.submit(() -> scrapeGOG());
+        executorService.submit(() -> scrapeK4g());
+        executorService.submit(() -> scrapeAmazon());
+        executorService.submit(() -> scrapeSteamAction());
+
+
+        // Initiates an orderly shutdown
+        executorService.shutdown();
     }
-    
-
-    private static void scrapeSteam() {
-        String gameUrl = "https://store.steampowered.com/app/292030/The_Witcher_3_Wild_Hunt/";
-        
-        try {
-            Document gamePage = Jsoup.connect(gameUrl)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
-                .referrer("http://www.google.com")
-
-                .get();
-
-            // Select the container that includes both the title and the price
-            Elements gameEditions = gamePage.select("div.game_area_purchase_game");
-
-            for (Element edition : gameEditions) {
-                // Extract the title
-                String title = edition.select("h1").text();
-
-                // Extract the price string
-                String priceText = edition.select("div.game_purchase_price").text();
-
-                // Check if the price string is not empty
-                if (!priceText.isEmpty()) {
-                    System.out.println("Game: " + title + " - Price: " + priceText);
-                } else {
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     
     private static void scrapeSteamAction() {
         int titlesToScrape = 500;
@@ -136,7 +109,7 @@ public class GamePriceScraper {
 	        driver.quit();
 	    }
 	}
-
+	
 
     private static void scrapeK4g() {
         // Replace with the actual URL and CSS selectors for K4g
