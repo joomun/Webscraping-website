@@ -33,7 +33,7 @@ public class GamePriceScraper {
             Document gamePage = Jsoup.connect(gameUrl)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
                 .referrer("http://www.google.com")
-                .timeout(10 * 1000)
+                .timeout(30 * 1000)
                 .get();
 
             // Select the container that includes both the title and the price
@@ -57,34 +57,36 @@ public class GamePriceScraper {
         }
     }
 
-    private static void scrapeGOG() {
-        // Set up WebDriverManager to download and set up the ChromeDriver binary
-        WebDriverManager.chromedriver().setup();
+	private static void scrapeGOG() {
+	    // Set up WebDriverManager to download and set up the ChromeDriver binary
+	    System.setProperty("webdriver.chrome.driver", "C:\\Users\\joomu\\Downloads\\chromedriver-win64\\chromedriver-win64\\chromedriver.exe");
+	
+	    ChromeOptions options = new ChromeOptions();
+	    options.addArguments("--headless"); // Run in headless mode (no browser UI)
+	
+	    WebDriver driver = new ChromeDriver(options);
+	
+	    try {
+	        driver.get("https://www.gog.com/en/game/the_witcher_3_wild_hunt_game_of_the_year_edition");
+	
+	        // Wait for the title and price elements to be present on the page
+	        WebElement titleElement = driver.findElement(By.cssSelector("h1.productcard-basics__title"));
+	        WebElement priceElement = driver.findElement(By.cssSelector("span.product-actions-price__final-amount"));
+	
+	        // Get the text of the elements, which should contain the title and the price
+	        String title = titleElement.getText();
+	        String price = priceElement.getText();
+	
+	        // Print the title and price
+	        System.out.println("Title: " + title + " - Price: " + price);
+	    } catch (Exception e) {
+	        System.err.println("Error scraping GOG: " + e.getMessage());
+	    } finally {
+	        // Close the browser
+	        driver.quit();
+	    }
+	}
 
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless"); // Run in headless mode (no browser UI)
-
-        WebDriver driver = new ChromeDriver(options);
-
-        try {
-            driver.get("https://www.gog.com/en/game/the_witcher_3_wild_hunt_game_of_the_year_edition");
-
-            // Wait for the price element to be present on the page
-            WebElement priceElement = driver.findElement(By.cssSelector("span.product-actions-price__final-amount"));
-
-            // Get the text of the element, which should contain the price
-            String price = priceElement.getText();
-
-            // Print the price
-            System.out.println("Price: " + price);
-        } catch (Exception e) {
-            System.err.println("Error scraping GOG: " + e.getMessage());
-        } finally {
-            // Close the browser
-            driver.quit();
-        }
-    }
-    
 
     private static void scrapeK4g() {
         // Replace with the actual URL and CSS selectors for K4g
@@ -92,10 +94,36 @@ public class GamePriceScraper {
     }
 
     private static void scrapeAmazon() {
-        // Replace with the actual URL and CSS selectors for Amazon
-        scrapeWebsite("https://amazon.com/", "CSS_SELECTOR_FOR_AMAZON");
-    }
+        String gameUrl = "https://www.amazon.com/Witcher-3-Wild-Hunt-Complete-PC/dp/B01K6010DO/ref=sr_1_3?crid=DV69O9DWPCVD&keywords=The%2BWitcher%2B3%3A%2BWild%2BHunt&qid=1700505473&sprefix=the%2Bwitcher%2B3%2Bwild%2Bhunt%2Caps%2C408&sr=8-3&th=1";
+        
+        try {
+            Document gamePage = Jsoup.connect(gameUrl)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+                .referrer("http://www.google.com")
+                .timeout(10 * 1000)
+                .get();
 
+            // Select the container that includes both the title and the price
+            Elements gameEditions = gamePage.select("div.game_area_purchase_game");
+
+            for (Element edition : gameEditions) {
+                // Extract the title
+                String title = edition.select("h1").text();
+
+                // Extract the price string
+                String priceText = edition.select("div.game_purchase_price").text();
+
+                // Check if the price string is not empty
+                if (!priceText.isEmpty()) {
+                    System.out.println("Game: " + title + " - Price: " + priceText);
+                } else {
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     private static void scrapeWebsite(String url, String cssSelector) {
         try {
         	Document document = Jsoup.connect(url)
