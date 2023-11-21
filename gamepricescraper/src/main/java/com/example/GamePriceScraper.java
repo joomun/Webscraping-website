@@ -12,19 +12,26 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class GamePriceScraper {
 	
     public static void main(String[] args) {
     	
-    	
-    	WebDriverManager.chromedriver().browserVersion("119.0.6045.160").setup();
-        scrapeSteam();
-        scrapeGOG();
-        scrapeK4g();
-        scrapeAmazon();
+        ExecutorService executorService = Executors.newFixedThreadPool(4); // Thread pool with 4 threads
+
+        WebDriverManager.chromedriver().browserVersion("119.0.6045.160").setup();
+
+        // Submit each scrape task to the executor service
+        executorService.submit(GamePriceScraper::scrapeSteam);
+        executorService.submit(GamePriceScraper::scrapeGOG);
+        executorService.submit(GamePriceScraper::scrapeK4g);
+        executorService.submit(GamePriceScraper::scrapeAmazon);
+        executorService.submit(GamePriceScraper::scrapeSteamAction);
+        executorService.shutdown(); // Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted
     }
+    
 
     private static void scrapeSteam() {
         String gameUrl = "https://store.steampowered.com/app/292030/The_Witcher_3_Wild_Hunt/";
@@ -33,7 +40,7 @@ public class GamePriceScraper {
             Document gamePage = Jsoup.connect(gameUrl)
                 .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
                 .referrer("http://www.google.com")
-                .timeout(30 * 1000)
+
                 .get();
 
             // Select the container that includes both the title and the price
@@ -56,6 +63,49 @@ public class GamePriceScraper {
             e.printStackTrace();
         }
     }
+
+    
+    private static void scrapeSteamAction() {
+        int titlesToScrape = 500;
+        int titlesScraped = 0;
+        int start = 0; // Pagination parameter for Steam search URL
+        String platform = "Steam";
+
+        try {
+            while (titlesScraped < titlesToScrape) {
+                String gameUrl = "https://store.steampowered.com/search/?term=action&start=" + start + "&count=50";
+                Document gamePage = Jsoup.connect(gameUrl)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+                    .referrer("http://www.google.com")
+                    .get();
+
+                Elements searchResults = gamePage.select("a.search_result_row");
+                for (Element result : searchResults) {
+                    if (titlesScraped >= titlesToScrape) {
+                        break;
+                    }
+                    
+                    // Extract the title
+                    String title = result.select("span.title").text();
+                    
+                    // Extract the price or 'Free' text
+                    String priceText = result.select("div.discount_final_price").text();
+                    
+                    // Print out the game title, price, and platform
+                    System.out.println("Game: " + title + " - Price: " + (priceText.isEmpty() ? "Price not available" : priceText) + " - Platform: " + platform);
+                    
+                    titlesScraped++;
+                }
+                
+                start += 50; // Assuming each page shows 50 titles, adjust this number if different
+                // Sleep between requests to respect Steam's server load
+                Thread.sleep(1000); // Sleep for 1 second
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 	private static void scrapeGOG() {
 	    // Set up WebDriverManager to download and set up the ChromeDriver binary
