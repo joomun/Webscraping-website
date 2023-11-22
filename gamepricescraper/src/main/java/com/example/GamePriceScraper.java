@@ -11,8 +11,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-
-
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -109,7 +109,53 @@ public class GamePriceScraper {
 	        driver.quit();
 	    }
 	}
-	
+	private static void scrapeGOGAction() {
+	    WebDriverManager.chromedriver().setup();
+	    ChromeOptions options = new ChromeOptions();
+	    options.addArguments("--headless"); // Run in headless mode (no browser UI)
+
+	    WebDriver driver = new ChromeDriver(options);
+	    int titlesScraped = 0;
+	    int pageNumber = 1;
+
+	    try {
+	        while (titlesScraped < 500) {
+	            driver.get("https://www.gog.com/en/games?genres=action&page=" + pageNumber);
+
+	            // Use WebDriverWait to wait for the game tiles to appear
+
+	            WebDriverWait wait = new WebDriverWait(driver, 40); // 10 seconds
+	            java.util.List<WebElement> gameTiles = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("product-tile")));
+
+	            if (gameTiles.isEmpty()) {
+	                // No more games found, break the loop
+	                break;
+	            }
+
+	            for (WebElement gameTile : gameTiles) {
+	                if (titlesScraped >= 500) {
+	                    break; // If we have scraped 500 titles, exit the loop
+	                }
+
+	                // Extract the title
+	                String title = gameTile.findElement(By.cssSelector(".product-tile__title")).getText();
+
+	                // Extract the price
+	                String price = gameTile.findElement(By.cssSelector(".product-price__final .final-value")).getText();
+
+	                // Output the title and price
+	                System.out.println("Title: " + title + " - Price: " + price);
+	                titlesScraped++;
+	            }
+
+	            pageNumber++; // Go to the next page
+	        }
+	    } catch (Exception e) {
+	        System.err.println("Error scraping GOG: " + e.getMessage());
+	    } finally {
+	        driver.quit(); // Ensure we close the driver after finishing
+	    }
+	}	
 
     private static void scrapeK4g() {
         // Replace with the actual URL and CSS selectors for K4g
