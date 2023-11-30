@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import com.example.entity.Game; // Make sure to import your Game entity class
+import com.mysql.cj.Query;
 
 
 
@@ -61,25 +62,37 @@ public class GamePriceScraper {
 	                if (titlesScraped >= titlesToScrape) {
 	                    break;
 	                }
-	                
-	                // Extract the title
+
+	                // Extract the title, price, and game URL
 	                String title = result.select("span.title").text();
-	                
-	                // Extract the price or 'Free' text
 	                String priceText = result.select("div.discount_final_price").text();
-	                
-	                // Create Game object and set properties
-	                Game game = new Game();
-	                game.setTitle(title);
-	                game.setPrice(priceText.isEmpty() ? null : priceText); // Assuming the 'price' field can handle 'null' for "Price not available"
-	                game.setPlatform(platform);
-	
-	                // Persist Game object using 
+	                String gameUrl1 = result.attr("href"); // Extract the game URL
+
 	                Session session = HibernateUtil.getSessionFactory().openSession();
 	                Transaction transaction = null;
 	                try {
 	                    transaction = session.beginTransaction();
-	                    session.save(game);
+
+	                    // Check if the game already exists
+	                    String queryStr = "FROM Game WHERE title = :title AND platform = :platform";
+	                    org.hibernate.query.Query<Game> query = session.createQuery(queryStr, Game.class);
+	                    query.setParameter("title", title);
+	                    query.setParameter("platform", platform);
+	                    Game game = query.uniqueResult();
+
+	                    if (game == null) {
+	                        // Create a new Game object if it doesn't exist
+	                        game = new Game();
+	                        game.setTitle(title);
+	                        game.setPlatform(platform);
+	                    }
+
+	                    // Update or set the price and URL
+	                    game.setPrice(priceText.isEmpty() ? null : priceText);
+	                    game.setUrl(gameUrl1); // Assuming there's a setUrl method in Game class
+
+	                    // Save or update the game record
+	                    session.saveOrUpdate(game);
 	                    transaction.commit();
 	                } catch (Exception e) {
 	                    if (transaction != null) transaction.rollback();
@@ -87,10 +100,10 @@ public class GamePriceScraper {
 	                } finally {
 	                    session.close();
 	                }
-	                
+
 	                titlesScraped++;
 	            }
-	            
+	
 	            start += 50; // Assuming each page shows 50 titles
 	            // Sleep between requests
 	            Thread.sleep(1000); // Sleep for 1 second
@@ -99,7 +112,6 @@ public class GamePriceScraper {
 	        e.printStackTrace();
 	    }
 	}
-
 
 	private static void scrapeGOG() {
 	    // Set up WebDriverManager to download and set up the ChromeDriver binary

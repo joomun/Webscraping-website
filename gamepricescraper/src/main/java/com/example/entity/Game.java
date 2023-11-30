@@ -66,6 +66,16 @@ public class Game {
     public void setPlatform(String platform) {
         this.platform = platform;
     }
+    @Column(name = "url", nullable = true, length = 500) // Added URL field
+    private String url;
+    
+    // Getter and setter for the url field
+    public String getUrl() {
+        return url;
+    }
 
+    public void setUrl(String url) {
+        this.url = url;
+    }
     // Consider adding an 'equals' and 'hashCode' method as well, if needed
 }
