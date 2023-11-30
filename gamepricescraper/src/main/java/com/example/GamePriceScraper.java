@@ -17,6 +17,10 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import com.example.entity.Game; // Make sure to import your Game entity class
+
 
 
 public class GamePriceScraper {
@@ -38,46 +42,63 @@ public class GamePriceScraper {
         executorService.shutdown();
     }
     
-    private static void scrapeSteamAction() {
-        int titlesToScrape = 500;
-        int titlesScraped = 0;
-        int start = 0; // Pagination parameter for Steam search URL
-        String platform = "Steam";
-
-        try {
-            while (titlesScraped < titlesToScrape) {
-                String gameUrl = "https://store.steampowered.com/search/?term=action&start=" + start + "&count=50";
-                Document gamePage = Jsoup.connect(gameUrl)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
-                    .referrer("http://www.google.com")
-                    .get();
-
-                Elements searchResults = gamePage.select("a.search_result_row");
-                for (Element result : searchResults) {
-                    if (titlesScraped >= titlesToScrape) {
-                        break;
-                    }
-                    
-                    // Extract the title
-                    String title = result.select("span.title").text();
-                    
-                    // Extract the price or 'Free' text
-                    String priceText = result.select("div.discount_final_price").text();
-                    
-                    // Print out the game title, price, and platform
-                    System.out.println("Game: " + title + " - Price: " + (priceText.isEmpty() ? "Price not available" : priceText) + " - Platform: " + platform);
-                    
-                    titlesScraped++;
-                }
-                
-                start += 50; // Assuming each page shows 50 titles, adjust this number if different
-                // Sleep between requests to respect Steam's server load
-                Thread.sleep(1000); // Sleep for 1 second
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+	private static void scrapeSteamAction() {
+	    int titlesToScrape = 500;
+	    int titlesScraped = 0;
+	    int start = 0; // Pagination parameter for Steam search URL
+	    String platform = "Steam";
+	
+	    try {
+	        while (titlesScraped < titlesToScrape) {
+	            String gameUrl = "https://store.steampowered.com/search/?term=action&start=" + start + "&count=50";
+	            Document gamePage = Jsoup.connect(gameUrl)
+	                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+	                .referrer("http://www.google.com")
+	                .get();
+	
+	            Elements searchResults = gamePage.select("a.search_result_row");
+	            for (Element result : searchResults) {
+	                if (titlesScraped >= titlesToScrape) {
+	                    break;
+	                }
+	                
+	                // Extract the title
+	                String title = result.select("span.title").text();
+	                
+	                // Extract the price or 'Free' text
+	                String priceText = result.select("div.discount_final_price").text();
+	                
+	                // Create Game object and set properties
+	                Game game = new Game();
+	                game.setTitle(title);
+	                game.setPrice(priceText.isEmpty() ? null : priceText); // Assuming the 'price' field can handle 'null' for "Price not available"
+	                game.setPlatform(platform);
+	
+	                // Persist Game object using 
+	                Session session = HibernateUtil.getSessionFactory().openSession();
+	                Transaction transaction = null;
+	                try {
+	                    transaction = session.beginTransaction();
+	                    session.save(game);
+	                    transaction.commit();
+	                } catch (Exception e) {
+	                    if (transaction != null) transaction.rollback();
+	                    e.printStackTrace();
+	                } finally {
+	                    session.close();
+	                }
+	                
+	                titlesScraped++;
+	            }
+	            
+	            start += 50; // Assuming each page shows 50 titles
+	            // Sleep between requests
+	            Thread.sleep(1000); // Sleep for 1 second
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	}
 
 
 	private static void scrapeGOG() {
