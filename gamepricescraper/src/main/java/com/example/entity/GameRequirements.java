@@ -1,5 +1,7 @@
 package com.example.entity;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.*;
 
 @Entity
@@ -106,4 +108,15 @@ public class GameRequirements {
     public void setStorage(String storage) {
         this.storage = storage;
     }
+    
+    @Column(name = "last_updated")
+    private LocalDateTime lastUpdated;
+    public LocalDateTime getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(LocalDateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
 }

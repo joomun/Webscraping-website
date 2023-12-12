@@ -142,41 +142,54 @@ public class GamePriceScraper {
 	                    query.setParameter("title", title);
 	                    query.setParameter("platform", platform);
 	                    Game existingGame = query.uniqueResult(); // Retrieve the single result
-
+	                    GameRequirements gameRequirements = null;
+	                    
 	                    if (existingGame != null) {
-	                        // The game exists, so we create a new GameRequirements entity
-	                        GameRequirements gameRequirements = new GameRequirements();
-	                        gameRequirements.setGame(existingGame); // Associate the GameRequirements with the existing Game
-	                        
+	                        // Check if GameRequirements for this game already exists
+	                        String reqQueryStr = "FROM GameRequirements WHERE game = :game";
+	                        org.hibernate.query.Query<GameRequirements> reqQuery = session.createQuery(reqQueryStr, GameRequirements.class);
+	                        reqQuery.setParameter("game", existingGame);
+	                        gameRequirements = reqQuery.uniqueResult(); // Retrieve the single result
+
+	                        if (gameRequirements == null) {
+	                            // If not found, create a new GameRequirements entity
+	                            gameRequirements = new GameRequirements();
+	                            gameRequirements.setGame(existingGame); // Associate the GameRequirements with the existing Game
+	                            // Set the lastUpdated field to the current date and time
+	                            gameRequirements.setLastUpdated(LocalDateTime.now());
+	                        }
+
+	                        // Whether it's a new or existing instance, update the fields
 	                        Elements sysReqElements = gamePage1.select("div.game_area_sys_req_leftCol");
 	                        Elements requirementsList = sysReqElements.select("ul.bb_ul > li");
-	                        
+
 	                        for (Element req : requirementsList) {
 	                            String requirementType = req.select("strong").first().text().replace(":", "").trim();
 	                            String requirementDetail = req.ownText().trim(); 
+	                            // Set the lastUpdated field to the current date and time
+	                            gameRequirements.setLastUpdated(LocalDateTime.now());
 	                            // Map each requirement to the corresponding field in GameRequirements
 	                            switch(requirementType.toLowerCase()) {
-	                                case "os":
-	                                    gameRequirements.setOs(requirementDetail);
-	                                    break;
-	                                case "processor":
-	                                    gameRequirements.setProcessor(requirementDetail);
-	                                    break;
-	                                case "memory":
-	                                    gameRequirements.setMemory(requirementDetail);
-	                                    break;
-	                                case "graphics":
-	                                    gameRequirements.setGraphics(requirementDetail);
-	                                    break;
-	                                case "network":
-	                                    gameRequirements.setNetwork(requirementDetail);
-	                                    break;
-	                                case "storage":
-	                                    gameRequirements.setStorage(requirementDetail);
-	                                    break;
-	                                // Add more cases if there are other fields
-	                            }
-
+                                case "os":
+                                    gameRequirements.setOs(requirementDetail);
+                                    break;
+                                case "processor":
+                                    gameRequirements.setProcessor(requirementDetail);
+                                    break;
+                                case "memory":
+                                    gameRequirements.setMemory(requirementDetail);
+                                    break;
+                                case "graphics":
+                                    gameRequirements.setGraphics(requirementDetail);
+                                    break;
+                                case "network":
+                                    gameRequirements.setNetwork(requirementDetail);
+                                    break;
+                                case "storage":
+                                    gameRequirements.setStorage(requirementDetail);
+                                    break;
+                                // Add more cases if there are other fields
+                            }
 	                            // Optional: Print each requirement type and detail
 	                            System.out.println(requirementType + ": " + requirementDetail);
 	                        }
