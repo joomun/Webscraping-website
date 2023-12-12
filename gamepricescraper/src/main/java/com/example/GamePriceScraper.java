@@ -14,6 +14,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -113,8 +114,11 @@ public class GamePriceScraper {
 	                        game.setTitle(title);
 	                        game.setPlatform(platform);
 	                        game.setImageUrl(imageUrl);
+	                        game.setLastUpdated(LocalDateTime.now());
 	                    }
 
+	                    // Update the last updated time to now
+	                    game.setLastUpdated(LocalDateTime.now());
 	                    // Update or set the price and URL
 	                    game.setPrice(priceText.isEmpty() ? null : priceText);
 	                    game.setUrl(gameUrl1); // Assuming there's a setUrl method in Game class
@@ -178,7 +182,7 @@ public class GamePriceScraper {
 	                        }
 	                        
 	                        // Save the new GameRequirements record
-	                        session.save(gameRequirements);
+	                        session.saveOrUpdate(gameRequirements);
 	                        transaction.commit();
 	                    }
 	                } catch (Exception e) {

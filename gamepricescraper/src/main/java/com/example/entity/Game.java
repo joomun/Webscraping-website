@@ -2,6 +2,7 @@ package com.example.entity;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "games")
@@ -89,4 +90,17 @@ public class Game {
         this.imageUrl = imageUrl;
     }
     // Consider adding an 'equals' and 'hashCode' method as well, if needed
+    
+    @Column(name = "last_updated")
+    private LocalDateTime lastUpdated;
+
+    // Other properties and methods...
+
+    public LocalDateTime getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(LocalDateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
 }
