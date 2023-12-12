@@ -20,7 +20,10 @@ public class Game {
     @Column(name = "platform", nullable = false, length = 50)
     private String platform;
     
-
+    @Column(name = "image_url") // Adjust the column name as per your DB schema
+    private String imageUrl;
+    
+    
     // No-argument constructor is required by Hibernate
     public Game() {
     }
@@ -76,6 +79,14 @@ public class Game {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+    
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
     // Consider adding an 'equals' and 'hashCode' method as well, if needed
 }

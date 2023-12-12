@@ -26,5 +26,8 @@
         
         <!-- Or if you are using annotated classes -->
         <mapping class="com.example.entity.Game"/>
+        
+        <!-- Or if you are using annotated classes -->
+        <mapping class="com.example.entity.GameRequirements"/>
     </session-factory>
 </hibernate-configuration>

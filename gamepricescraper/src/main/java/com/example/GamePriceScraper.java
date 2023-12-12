@@ -16,10 +16,12 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import com.example.entity.Game; // Make sure to import your Game entity class
+import com.example.entity.GameRequirements;
 import com.mysql.cj.Query;
 
 
@@ -66,13 +68,38 @@ public class GamePriceScraper {
 	                // Extract the title, price, and game URL
 	                String title = result.select("span.title").text();
 	                String priceText = result.select("div.discount_final_price").text();
+	                Elements imageElements = result.select("div.col.search_capsule img");
+	                String imageUrl = imageElements.attr("src"); // This gets the 'src' attribute of the 'img' tag
+	                
+	                System.out.println("Image link for game: " + imageUrl);
+	                
+	                
 	                String gameUrl1 = result.attr("href"); // Extract the game URL
+	                int exclamationIndex = gameUrl1.indexOf('?');
+	                
+	                //Do string manipulation on URL
+	                if (exclamationIndex != -1) {
+	                	gameUrl1 = gameUrl1.substring(0, exclamationIndex);
+	                }
+	                
+	                Document gamePage1 = Jsoup.connect(gameUrl1)
+	                	    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
+	                	    .referrer("http://www.google.com")
+	                	    .get();
 
+	                // Extract the description from the div with class 'game_description'
+	                Elements descriptionElements = gamePage1.select("div.game_description");
+	                String description = descriptionElements.text(); // This will get all the text inside the div without HTML tags
+	                System.out.println("Game Url: " + gameUrl1);
+	                
+	                System.out.println("Description for game: " + description);
+	                
 	                Session session = HibernateUtil.getSessionFactory().openSession();
 	                Transaction transaction = null;
-	                try {
-	                    transaction = session.beginTransaction();
+	                
 
+	                try {
+	                	transaction = session.beginTransaction();
 	                    // Check if the game already exists
 	                    String queryStr = "FROM Game WHERE title = :title AND platform = :platform";
 	                    org.hibernate.query.Query<Game> query = session.createQuery(queryStr, Game.class);
@@ -85,19 +112,81 @@ public class GamePriceScraper {
 	                        game = new Game();
 	                        game.setTitle(title);
 	                        game.setPlatform(platform);
+	                        game.setImageUrl(imageUrl);
 	                    }
 
 	                    // Update or set the price and URL
 	                    game.setPrice(priceText.isEmpty() ? null : priceText);
 	                    game.setUrl(gameUrl1); // Assuming there's a setUrl method in Game class
-
+	                    game.setImageUrl(imageUrl);
+	                    
 	                    // Save or update the game record
 	                    session.saveOrUpdate(game);
 	                    transaction.commit();
 	                } catch (Exception e) {
 	                    if (transaction != null) transaction.rollback();
 	                    e.printStackTrace();
-	                } finally {
+	                } 
+	                
+	                
+	                try {
+	                    transaction = session.beginTransaction();
+	                    
+	                    // Check if the game already exists
+	                    String queryStr = "FROM Game WHERE title = :title AND platform = :platform";
+	                    org.hibernate.query.Query<Game> query = session.createQuery(queryStr, Game.class);
+	                    query.setParameter("title", title);
+	                    query.setParameter("platform", platform);
+	                    Game existingGame = query.uniqueResult(); // Retrieve the single result
+
+	                    if (existingGame != null) {
+	                        // The game exists, so we create a new GameRequirements entity
+	                        GameRequirements gameRequirements = new GameRequirements();
+	                        gameRequirements.setGame(existingGame); // Associate the GameRequirements with the existing Game
+	                        
+	                        Elements sysReqElements = gamePage1.select("div.game_area_sys_req_leftCol");
+	                        Elements requirementsList = sysReqElements.select("ul.bb_ul > li");
+	                        
+	                        for (Element req : requirementsList) {
+	                            String requirementType = req.select("strong").first().text().replace(":", "").trim();
+	                            String requirementDetail = req.ownText().trim(); 
+	                            // Map each requirement to the corresponding field in GameRequirements
+	                            switch(requirementType.toLowerCase()) {
+	                                case "os":
+	                                    gameRequirements.setOs(requirementDetail);
+	                                    break;
+	                                case "processor":
+	                                    gameRequirements.setProcessor(requirementDetail);
+	                                    break;
+	                                case "memory":
+	                                    gameRequirements.setMemory(requirementDetail);
+	                                    break;
+	                                case "graphics":
+	                                    gameRequirements.setGraphics(requirementDetail);
+	                                    break;
+	                                case "network":
+	                                    gameRequirements.setNetwork(requirementDetail);
+	                                    break;
+	                                case "storage":
+	                                    gameRequirements.setStorage(requirementDetail);
+	                                    break;
+	                                // Add more cases if there are other fields
+	                            }
+
+	                            // Optional: Print each requirement type and detail
+	                            System.out.println(requirementType + ": " + requirementDetail);
+	                        }
+	                        
+	                        // Save the new GameRequirements record
+	                        session.save(gameRequirements);
+	                        transaction.commit();
+	                    }
+	                } catch (Exception e) {
+	                	if (transaction != null) transaction.rollback();
+	                    e.printStackTrace();
+
+	                }finally {
+	                	if (session != null) session.close();
 	                    session.close();
 	                }
 
@@ -111,6 +200,8 @@ public class GamePriceScraper {
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    }
+	    
+	    
 	}
 
 	private static void scrapeGOG() {
