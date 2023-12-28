@@ -4,7 +4,7 @@ const app = express();
 const port = 3000;
 const path = require('path');
 
-app.use(express.static('static')); // Serve your static HTML
+app.use(express.static('resources/static')); // Serve your static HTML
 
 app.get('/', (req, res) => {
     // Run your Java program here
