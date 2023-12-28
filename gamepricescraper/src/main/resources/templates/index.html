@@ -23,13 +23,28 @@
         .btn-primary {
             border-radius: 0;
         }
+
+        /* Existing styles */
+        /* ... */
+
+        /* New hover effect for navbar links */
+        .navbar-nav .nav-link:hover {
+            color: #f8f9fa; /* This is just an example color */
+            background-color: #333; /* Example background color on hover */
+            border-radius: 5px; /* Optional: if you want rounded corners */
+            padding: 5px; /* Optional: if you want some padding */
+            transition: all 0.3s; /* Smooth transition for the hover effect */
+        }
+
     </style>
 </head>
 
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">Game Comparison</a>
+        <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #4a556a;">
+            <a class="navbar-brand" href="#">
+                <img src="../static/image/logo.png" alt="Game Comparison Logo" style="max-height: 10%; max-width: 10%;">
+            </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -37,13 +52,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
+                        <a class="nav-link" href="#" style="color: #ffffff;">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
+                        <a class="nav-link" href="#" style="color: #ffffff;">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
+                        <a class="nav-link" href="#" style="color: #ffffff;">Contact</a>
                     </li>
                 </ul>
             </div>
