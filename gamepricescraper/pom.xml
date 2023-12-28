@@ -1,6 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.6.4</version> <!-- Use the latest version available -->
+  </parent>
+
   <groupId>com.example</groupId>
   <artifactId>gamepricescraper</artifactId>
   <packaging>jar</packaging>
@@ -15,11 +22,6 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-context</artifactId>
-        <version>5.3.10</version>
-    </dependency>
 
     <!-- Hibernate ORM -->
     <dependency>
@@ -69,5 +71,20 @@
 	    <artifactId>mysql-connector-java</artifactId>
 	    <version>8.0.23</version>
 	</dependency>
+	<dependency>
+	    <groupId>org.springframework.boot</groupId>
+	    <artifactId>spring-boot-starter-web</artifactId>
+	</dependency>
+
   </dependencies>
+  
+  <build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+    </plugins>
+  </build>
+
 </project>
