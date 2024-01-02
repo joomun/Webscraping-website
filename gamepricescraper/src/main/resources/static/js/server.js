@@ -29,32 +29,48 @@ app.use('/js', express.static(path.join(__dirname, '../../static/js')));
 app.use('/css', express.static(path.join(__dirname, '../../static/css')));
 
 // Endpoint to compile and run the Java program
+
 app.get('/compile-and-run', (req, res) => {
     // Inform the client that the compilation has started
     res.write('Compilation has started.\n');
 
-    // Run Maven to compile the project with increased maxBuffer
-    exec('mvn clean compile', { cwd: '../../../../../../gamepricescraper', maxBuffer: 1024 * 1024 * 5 }, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Compilation error: ${error}`);
+    // Spawn Maven to compile the project
+    const compile = spawn('mvn.cmd', ['clean', 'compile'], { cwd: '../../../../../../gamepricescraper' });
+
+    compile.stdout.on('data', (data) => {
+        console.log(`stdout: ${data}`);
+    });
+
+    compile.stderr.on('data', (data) => {
+        console.error(`stderr: ${data}`);
+    });
+
+    compile.on('close', (code) => {
+        if (code !== 0) {
             res.write('Failed to compile Java files.\n');
-            return res.end(); // Make sure to end the response here
+            return res.end();
         }
 
         res.write('Compilation successful. Execution has started.\n');
 
-        // Assuming you have a Maven exec plugin setup to run your main class with increased maxBuffer
-        exec('mvn exec:java', { cwd: '../../../../../../gamepricescraper', maxBuffer: 1024 * 1024 * 5 }, (error, execStdout, execStderr) => {
-            if (error) {
-                console.error(`Execution error: ${error}`);
-                res.write(`Failed to run Java program. Details: ${execStderr}`);
-                return res.end(); // Make sure to end the response here
-            }
+        // Spawn Maven to run the exec plugin
+        const exec = spawn('mvn.cmd', ['exec:java'], { cwd: '../../../../../../gamepricescraper' });
 
-            // Send the output of your Java program as part of the response
-            res.write('Execution successful.\n');
-            res.write(execStdout);
-            res.end(); // End the response after sending the output
+        exec.stdout.on('data', (data) => {
+            res.write(data);
+        });
+
+        exec.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+        });
+
+        exec.on('close', (execCode) => {
+            if (execCode !== 0) {
+                res.write('Failed to run Java program.\n');
+            } else {
+                res.write('Execution successful.\n');
+            }
+            res.end();
         });
     });
 });
