@@ -43,7 +43,7 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #4a556a;">
             <a class="navbar-brand" href="#">
-                <img src="../static/image/logo.png" alt="Game Comparison Logo" style="max-height: 10%; max-width: 10%;">
+                <img src="/image/logo.png" alt="Game Comparison Logo" style="max-height: 10%; max-width: 10%;">
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,21 +66,15 @@
     </header>
 
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <h1 class="text-center">Game Comparison</h1>
-                <form class="mt-4">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search for a game...">
-                        <div class="input-group-append">
-                            <button class="btn btn-primary" type="submit">Search</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <body>
+            <input type="text" id="searchInput" placeholder="Search for a game...">
+            <button id="searchBtn">Search</button>
+            <div id="results"></div>
+          
+            <script src="/js/search.js"></script>
+        </body>
     </div>
-
+    <script src="/js/scrap.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
