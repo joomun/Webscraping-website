@@ -1,0 +1,50 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.container {
+    margin-top: 100px;
+}
+
+.form-control {
+    border-radius: 0;
+}
+
+.btn-primary {
+    border-radius: 0;
+}
+
+/* Existing styles */
+/* ... */
+
+/* New hover effect for navbar links */
+.navbar-nav .nav-link:hover {
+    color: #f8f9fa; /* This is just an example color */
+    background-color: #333; /* Example background color on hover */
+    border-radius: 5px; /* Optional: if you want rounded corners */
+    padding: 5px; /* Optional: if you want some padding */
+    transition: all 0.3s; /* Smooth transition for the hover effect */
+}
+.deals-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px; /* Adjust the space between items */
+    margin-top: 20px;
+}
+
+.deal {
+    border: 1px solid #ddd;
+    padding: 10px;
+    width: 200px; /* Adjust the width as necessary */
+    text-align: center;
+}
+
+.deal img {
+    max-width: 100%;
+    height: auto;
+}
+
+.deal h5 {
+    margin: 10px 0;
+}

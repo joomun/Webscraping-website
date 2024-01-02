@@ -7,34 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Comparison</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .container {
-            margin-top: 100px;
-        }
-
-        .form-control {
-            border-radius: 0;
-        }
-
-        .btn-primary {
-            border-radius: 0;
-        }
-
-        /* Existing styles */
-        /* ... */
-
-        /* New hover effect for navbar links */
-        .navbar-nav .nav-link:hover {
-            color: #f8f9fa; /* This is just an example color */
-            background-color: #333; /* Example background color on hover */
-            border-radius: 5px; /* Optional: if you want rounded corners */
-            padding: 5px; /* Optional: if you want some padding */
-            transition: all 0.3s; /* Smooth transition for the hover effect */
-        }
 
     </style>
 </head>
@@ -74,6 +48,13 @@
             <script src="/js/search.js"></script>
         </body>
     </div>
+
+        <!-- Add this inside your <body> tag -->
+    <div id="deals-container" class="deals-container">
+        <!-- Deals will be dynamically inserted here by the script -->
+    </div>
+
+    <script src="/js/latest.js"></script>
     <script src="/js/scrap.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
