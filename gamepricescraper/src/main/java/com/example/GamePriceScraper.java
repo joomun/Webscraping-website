@@ -113,8 +113,11 @@ public class GamePriceScraper {
 	                        game = new Game();
 	                        game.setTitle(title);
 	                        game.setPlatform(platform);
-	                        game.setImageUrl(imageUrl);
+	                        
 	                        game.setLastUpdated(LocalDateTime.now());
+	                        String oldImageUrl = imageUrl;
+	                        String newImageUrl = oldImageUrl.replace("capsule_sm_120", "capsule_616x353");
+	                        game.setImageUrl(newImageUrl);
 	                    }
 
 	                    // Update the last updated time to now
@@ -122,7 +125,9 @@ public class GamePriceScraper {
 	                    // Update or set the price and URL
 	                    game.setPrice(priceText.isEmpty() ? null : priceText);
 	                    game.setUrl(gameUrl1); // Assuming there's a setUrl method in Game class
-	                    game.setImageUrl(imageUrl);
+                        String oldImageUrl = imageUrl;
+                        String newImageUrl = oldImageUrl.replace("capsule_sm_120", "capsule_616x353");
+                        game.setImageUrl(newImageUrl);
 	                    
 	                    // Save or update the game record
 	                    session.saveOrUpdate(game);

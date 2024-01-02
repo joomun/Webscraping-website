@@ -66,7 +66,7 @@ const getDealsFromDatabase = async () => {
         const [results, fields] = await connection.execute(`
             SELECT * 
             FROM games 
-            LIMIT 10;
+            LIMIT 30;
         `);
         return results;
     } finally {

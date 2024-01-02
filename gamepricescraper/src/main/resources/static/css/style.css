@@ -48,3 +48,31 @@ body {
 .deal h5 {
     margin: 10px 0;
 }
+
+
+#dealsCarousel {
+    width: 100%; /* Full width */
+    height: 75vh; /* 75% of the viewport height */
+}
+
+.carousel-inner {
+    width: 100%;
+    height: 100%;
+}
+
+.carousel-item {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s ease;
+    
+}
+.carousel-item img {
+    width: 100%; /* Make the image full width of the .carousel-item */
+    height: 100%; /* Make the image full height of the .carousel-item */
+    object-fit: cover; 
+}
+.carousel-item:hover {
+    transform: scale(1.05); /* Scale up the item on hover */
+    cursor: pointer; /* Change cursor to indicate it's clickable */
+    background-color: rgba(0, 0, 0, 0.1); /* Optional: add a slight background on hover */
+}

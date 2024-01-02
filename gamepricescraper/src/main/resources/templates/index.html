@@ -49,10 +49,22 @@
         </body>
     </div>
 
-        <!-- Add this inside your <body> tag -->
-    <div id="deals-container" class="deals-container">
-        <!-- Deals will be dynamically inserted here by the script -->
+
+
+    <div id="dealsCarousel" class="carousel slide" data-ride="carousel">
+        <div class="carousel-inner" id="deals-container">
+            <!-- Carousel items will be inserted dynamically here -->
+        </div>
+        <a class="carousel-control-prev" href="#dealsCarousel" role="button" data-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="sr-only">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#dealsCarousel" role="button" data-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="sr-only">Next</span>
+        </a>
     </div>
+            
 
     <script src="/js/latest.js"></script>
     <script src="/js/scrap.js"></script>
