@@ -120,6 +120,12 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../templates/index.html'));
 });
 
+// Assuming your product.html is in the 'resources/templates' directory
+app.get('/product', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../templates/product.html'));
+});
+
+
 app.use((err, req, res, next) => {
     if (res.headersSent) {
       return next(err);

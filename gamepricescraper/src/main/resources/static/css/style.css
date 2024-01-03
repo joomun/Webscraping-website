@@ -76,3 +76,58 @@ body {
     cursor: pointer; /* Change cursor to indicate it's clickable */
     background-color: rgba(0, 0, 0, 0.1); /* Optional: add a slight background on hover */
 }
+
+
+/* Custom CSS for centering the search box */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Use vh for full viewport height */
+}
+
+.search-container {
+    display: flex;
+    flex-direction: column; /* Stack the input and button vertically */
+    align-items: center;
+}
+
+.form-control {
+    margin-bottom: 1rem; /* Add some space between the input and the button */
+}
+
+
+/* Add a container for the image and the search bar */
+.image-container {
+    text-align: center; /* Center the image */
+    margin-bottom: 20px; /* Provide some spacing between the image and the search bar */
+}
+
+/* Style the search container */
+.search-container {
+    display: flex;
+    justify-content: center; /* Center the search bar horizontally */
+    margin-bottom: 20px; /* Provide some spacing between the search bar and the next content */
+    width: 50%;
+}
+
+/* Style the search input field */
+#searchInput {
+    border: none;
+    border-radius: 24px; /* Rounded borders */
+    padding: 10px 20px;
+    width: calc(100% - 40px); /* Full width minus padding */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Shadow effect */
+    margin-right: -1px; /* Align with button */
+}
+
+/* Style the search button */
+#searchBtn {
+    border: none;
+    border-radius: 24px 24px 24px 24px; /* Right side rounded borders */
+    padding: 10px 20px;
+    background-color: #4285f4; /* Google's button blue */
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Shadow effect */
+}
