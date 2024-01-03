@@ -103,17 +103,58 @@ app.get('/api/deals', async (req, res) => {
 
 
 
-// API endpoint for searching the database
-app.get('/search', (req, res) => {
-    const searchTerm = req.query.term;
-    connection.query('SELECT * FROM yourTable WHERE yourSearchColumn LIKE ?', [`%${searchTerm}%`], (error, results, fields) => {
-      if (error) {
-        res.status(500).send('Database query failed');
-        throw error;
-      }
-      res.json(results);
-    });
-  });
+
+app.get('/search', async (req, res) => {
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '70Leo@3878',
+        database: 'Game_comparison'
+      });
+    let searchTerm = req.query.term;
+    searchTerm = typeof searchTerm === 'string' ? searchTerm : '';
+    try {
+        // Use the LIKE operator with wildcards for approximate matching
+        // The "%" symbols are wildcards that match any sequence of characters
+        const query = `SELECT * FROM games WHERE title LIKE CONCAT('%', ?, '%')`;
+        const [results] = await connection.execute(query, [searchTerm]);
+
+        if (results.length > 0) {
+            res.json(results);
+        } else {
+            res.status(404).send('No games found with that title');
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error executing search query');
+    }
+});
+
+
+app.get('/api/products', async (req, res) => {
+    try {
+        const connection = await mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            password: '70Leo@3878',
+            database: 'game_comparison'
+        });
+        // Get page and limit from query string, with default values
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const offset = (page - 1) * limit;
+
+        // Rest of your code to handle pagination and query execution...
+        const [results] = await connection.execute('SELECT * FROM games LIMIT ?, ?', [offset, limit]);
+        res.json(results);
+
+        await connection.end();
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error fetching products');
+    }
+});
+  
 
 // Serve index.html at the root
 app.get('/', (req, res) => {
