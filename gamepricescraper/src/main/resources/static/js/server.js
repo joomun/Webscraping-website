@@ -22,6 +22,17 @@ const dbConfig = {
     database: 'Game_comparison'
 };
 
+// Set up your SQL connection pool
+const pool = mysql.createPool({
+    host: 'localhost',
+    user: 'root',
+    password: '70Leo@3878',
+    database: 'Game_comparison',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
 app.use(express.json());
 app.use(express.static('gamepricescraper/src/main/resources/static')); // Serve your static HTML
 app.use('/image', express.static(path.join(__dirname, '../../static/image')));
@@ -93,7 +104,7 @@ const getDealsFromDatabase = async () => {
 // Example Node.js route to get deals from the database
 app.get('/api/deals', async (req, res) => {
     try {
-        const deals = await getDealsFromDatabase();
+        const [deals] = await pool.query(`SELECT * FROM games LIMIT 30;`);
         res.json(deals);
     } catch (error) {
         console.error('Error fetching deals:', error);
@@ -105,20 +116,14 @@ app.get('/api/deals', async (req, res) => {
 
 
 app.get('/search', async (req, res) => {
-    const connection = mysql.createConnection({
-        host: 'localhost',
-        user: 'root',
-        password: '70Leo@3878',
-        database: 'Game_comparison'
-      });
     let searchTerm = req.query.term;
     searchTerm = typeof searchTerm === 'string' ? searchTerm : '';
     try {
-        // Use the LIKE operator with wildcards for approximate matching
-        // The "%" symbols are wildcards that match any sequence of characters
-        const query = `SELECT * FROM games WHERE title LIKE CONCAT('%', ?, '%')`;
-        const [results] = await connection.execute(query, [searchTerm]);
-
+        const [results] = await pool.query(`SELECT * FROM games WHERE title LIKE CONCAT('%', ?, '%')`, [searchTerm]);
+        
+        // Log the results
+        console.log("Search Results:", results);
+        
         if (results.length > 0) {
             res.json(results);
         } else {
@@ -129,6 +134,8 @@ app.get('/search', async (req, res) => {
         res.status(500).send('Error executing search query');
     }
 });
+
+
 
 
 app.get('/api/products', async (req, res) => {
@@ -161,8 +168,13 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../templates/index.html'));
 });
 
+
 // Assuming your product.html is in the 'resources/templates' directory
 app.get('/product', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../templates/product.html'));
+});
+// Assuming your product.html is in the 'resources/templates' directory
+app.get('/product.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../../templates/product.html'));
 });
 

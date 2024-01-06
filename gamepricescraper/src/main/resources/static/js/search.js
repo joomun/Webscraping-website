@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
       // Check if the search term is not empty
       if (searchTerm) {
           // Redirect to the search page with the search term as a query parameter
-          window.location.href = `/search?term=${encodeURIComponent(searchTerm)}`;
+          window.location.href = `product.html?search=${encodeURIComponent(searchTerm)}`;
+
       } else {
           // Optionally, alert the user that they need to enter a search term
           alert('Please enter a search term.');

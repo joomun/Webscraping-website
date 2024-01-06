@@ -100,3 +100,14 @@ button:active {
     justify-content: center;
     color: #fff
 }
+
+
+.product:hover {
+    background-color: #f0f0f0; /* or any color you prefer */
+    cursor: pointer; /* Change cursor to indicate that it's clickable */
+    -webkit-transition: background-color 200ms linear;
+    -ms-transition: background-color 200ms linear;
+    transition: background-color 200ms linear;
+    transform: scale(1.05); /* Scales up the product to 105% of its original size */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Adds a shadow for better effect */
+}
