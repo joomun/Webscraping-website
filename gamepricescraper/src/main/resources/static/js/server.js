@@ -139,23 +139,21 @@ app.get('/search', async (req, res) => {
 
 
 app.get('/api/products', async (req, res) => {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 12; // Set the limit to 12 items per page
+    const offset = (page - 1) * limit;
     try {
-        const connection = await mysql.createConnection({
-            host: 'localhost',
-            user: 'root',
-            password: '70Leo@3878',
-            database: 'game_comparison'
+        const [products] = await pool.execute('SELECT * FROM games LIMIT ?, ?', [offset, limit]);
+        const [totalItemsResult] = await pool.execute('SELECT COUNT(*) AS total FROM games');
+        const totalItems = totalItemsResult[0].total;
+        const totalPages = Math.ceil(totalItems / limit);
+        console.log('Total items:', totalItems);
+        res.json({
+            products: products,
+            page: page,
+            totalPages: totalPages,
+            totalItems: totalItems
         });
-        // Get page and limit from query string, with default values
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || 10;
-        const offset = (page - 1) * limit;
-
-        // Rest of your code to handle pagination and query execution...
-        const [results] = await connection.execute('SELECT * FROM games LIMIT ?, ?', [offset, limit]);
-        res.json(results);
-
-        await connection.end();
     } catch (error) {
         console.error(error);
         res.status(500).send('Error fetching products');

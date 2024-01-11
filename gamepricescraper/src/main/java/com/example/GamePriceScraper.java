@@ -15,6 +15,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -33,13 +34,12 @@ public class GamePriceScraper {
     	
         ExecutorService executorService = Executors.newFixedThreadPool(5); // Correct number of threads if needed
 
-        WebDriverManager.chromedriver().browserVersion("119.0.6045.160").setup();
 
         // Submit each scrape task to the executor service
-        executorService.submit(() -> scrapeGOG());
+        //executorService.submit(() -> scrapeGOG());
         executorService.submit(() -> scrapeK4g());
-        executorService.submit(() -> scrapeAmazon());
-        executorService.submit(() -> scrapeSteamAction());
+        //executorService.submit(() -> scrapeAmazon());
+        //executorService.submit(() -> scrapeSteamAction());
 
 
         // Initiates an orderly shutdown
@@ -304,9 +304,55 @@ public class GamePriceScraper {
 	}	
 
     private static void scrapeK4g() {
-        // Replace with the actual URL and CSS selectors for K4g
-        scrapeWebsite("https://k4g.com/", "CSS_SELECTOR_FOR_K4G");
+        // Set up ChromeOptions
+        ChromeOptions options = new ChromeOptions();
+        options.setBinary("C:\\Users\\joomu\\AppData\\Local\\Chromium\\Application\\chrome.exe");
+
+        // Set the desired ChromeDriver version
+        WebDriverManager.chromedriver().setup();
+
+        // Initialize the ChromeDriver with the specified options
+        WebDriver driver = new ChromeDriver(options);
+
+        // Navigate to the K4g page
+        driver.get("https://k4g.com/store/games?page=1&q=action");
+
+        // Add a delay to allow the page to load
+        try {
+            Thread.sleep(40000); // Sleep for 10 seconds (you can adjust the duration)
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Find all containers with class "GridResults_card__4J3Ad"
+        List<WebElement> containers = driver.findElements(By.className("GridResults_card__4J3Ad"));
+
+        // Iterate through the containers and extract information
+        for (WebElement container : containers) {
+            // Extract title
+            WebElement titleElement = container.findElement(By.className("GridResults_title__V99DP"));
+            String title = titleElement.getText();
+
+            // Extract price
+            WebElement priceElement = container.findElement(By.className("Price_price__3S67l"));
+            String price = priceElement.getText();
+
+            // Extract image link
+            WebElement imageElement = container.findElement(By.tagName("img"));
+            String imageLink = imageElement.getAttribute("src");
+
+            // Print the extracted information
+            System.out.println("Title: " + title);
+            System.out.println("Price: " + price);
+            System.out.println("Image Link: " + imageLink);
+            System.out.println("==============================================");
+        }
+
+        // Close the browser
+        driver.quit();
     }
+    
+    
 
     private static void scrapeAmazon() {
         String gameUrl = "https://www.amazon.com/Witcher-3-Wild-Hunt-Complete-PC/dp/B01K6010DO/ref=sr_1_3?crid=DV69O9DWPCVD&keywords=The%2BWitcher%2B3%3A%2BWild%2BHunt&qid=1700505473&sprefix=the%2Bwitcher%2B3%2Bwild%2Bhunt%2Caps%2C408&sr=8-3&th=1";

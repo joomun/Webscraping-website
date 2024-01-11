@@ -111,3 +111,10 @@ button:active {
     transform: scale(1.05); /* Scales up the product to 105% of its original size */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: Adds a shadow for better effect */
 }
+
+
+.cart-button {
+    display: flex;
+    justify-content: center;
+  }
+  
