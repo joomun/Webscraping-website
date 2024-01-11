@@ -314,38 +314,108 @@ public class GamePriceScraper {
         // Initialize the ChromeDriver with the specified options
         WebDriver driver = new ChromeDriver(options);
 
-        // Navigate to the K4g page
-        driver.get("https://k4g.com/store/games?page=1&q=action");
+        int gamesToScrape = 500;
+        int gamesScraped = 0;
+        int page = 1; // Start with page 1
+        String platform="K4G";
+        while (gamesScraped < gamesToScrape) {
+            // Build the URL for the current page
+            String url = "https://k4g.com/store/games?genre[]=1&language[]=2&page=" + page + "&product_type[]=1&show=100";
+            // Navigate to the K4g page
+            driver.get(url);
+            try {
+                Thread.sleep(40000); // Sleep for 10 seconds to ensure the page loads completely
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-        // Add a delay to allow the page to load
-        try {
-            Thread.sleep(40000); // Sleep for 10 seconds (you can adjust the duration)
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+            // Find all containers with class "GridResults_card__4J3Ad"
+            List<WebElement> containers = driver.findElements(By.className("GridResults_card__4J3Ad"));
 
-        // Find all containers with class "GridResults_card__4J3Ad"
-        List<WebElement> containers = driver.findElements(By.className("GridResults_card__4J3Ad"));
+            // Iterate through the containers and extract information
+            for (WebElement container : containers) {
+                // Extract title
+                WebElement titleElement = container.findElement(By.className("GridResults_title__V99DP"));
+                String title = titleElement.getText();
+                // Remove "| CD Key" from the title if it exists
+                title = title.replace(" CD Key", "");
 
-        // Iterate through the containers and extract information
-        for (WebElement container : containers) {
-            // Extract title
-            WebElement titleElement = container.findElement(By.className("GridResults_title__V99DP"));
-            String title = titleElement.getText();
+                // Extract price
+                WebElement priceElement = container.findElement(By.className("Price_price__3S67l"));
+                String price = priceElement.getText();
 
-            // Extract price
-            WebElement priceElement = container.findElement(By.className("Price_price__3S67l"));
-            String price = priceElement.getText();
+                // Extract image link
+                WebElement imageElement = container.findElement(By.tagName("img"));
+                String imageLink = imageElement.getAttribute("src");
 
-            // Extract image link
-            WebElement imageElement = container.findElement(By.tagName("img"));
-            String imageLink = imageElement.getAttribute("src");
+                WebElement coverLinkElement = container.findElement(By.className("CardCover_coverLink__QogOK"));
 
-            // Print the extracted information
-            System.out.println("Title: " + title);
-            System.out.println("Price: " + price);
-            System.out.println("Image Link: " + imageLink);
-            System.out.println("==============================================");
+	             // Extract the "href" attribute (redirection link)
+	             String redirectionLink = coverLinkElement.getAttribute("href");
+	
+	             // Now, you can print or store the "redirectionLink" variable as needed
+	             System.out.println("Redirection Link: " + redirectionLink);
+                // Print the extracted information
+                System.out.println("Title: " + title);
+                System.out.println("Price: " + price);
+                System.out.println("Image Link: " + imageLink);
+                System.out.println("==============================================");
+                System.out.println("gamenumber : " + gamesScraped);
+                gamesScraped++;
+                Session session = HibernateUtil.getSessionFactory().openSession();
+                Transaction transaction = null;
+
+                try {
+                	transaction = session.beginTransaction();
+                    // Check if the game already exists
+                    String queryStr = "FROM Game WHERE title = :title AND platform = :platform";
+                    org.hibernate.query.Query<Game> query = session.createQuery(queryStr, Game.class);
+                    query.setParameter("title", title);
+                    query.setParameter("platform", platform);
+                    Game game = query.uniqueResult();
+
+                    if (game == null) {
+                        // Create a new Game object if it doesn't exist
+                        game = new Game();
+                        game.setTitle(title);
+                        game.setPlatform(platform);
+                        
+                        game.setLastUpdated(LocalDateTime.now());
+                        game.setUrl(redirectionLink); 
+                        game.setImageUrl(imageLink);
+                    }
+
+                    // Update the last updated time to now
+                    game.setLastUpdated(LocalDateTime.now());
+                    // Update or set the price and URL
+                    game.setPrice(price.isEmpty() ? null : price);
+                    game.setImageUrl(imageLink);
+                    game.setUrl(redirectionLink); 
+                    // Save or update the game record
+                    session.saveOrUpdate(game);
+                    transaction.commit();
+                } catch (Exception e) {
+                	if (transaction != null) transaction.rollback();
+                    e.printStackTrace();
+
+                }finally {
+                	if (session != null) session.close();
+                    session.close();
+                }
+                
+                
+                if (gamesScraped >= gamesToScrape) {
+                    break; // Exit the loop when the desired number of games is scraped
+                }
+            }
+
+            // Check if the loop should exit
+            if (gamesScraped >= gamesToScrape) {
+                break;
+            }
+
+            // Increment the page number for the next iteration
+            page++;
         }
 
         // Close the browser
