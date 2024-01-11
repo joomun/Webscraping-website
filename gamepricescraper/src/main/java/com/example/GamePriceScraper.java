@@ -36,10 +36,10 @@ public class GamePriceScraper {
 
 
         // Submit each scrape task to the executor service
-        //executorService.submit(() -> scrapeGOG());
+        executorService.submit(() -> scrapeGOGAction());
         executorService.submit(() -> scrapeK4g());
         //executorService.submit(() -> scrapeAmazon());
-        //executorService.submit(() -> scrapeSteamAction());
+        executorService.submit(() -> scrapeSteamAction());
 
 
         // Initiates an orderly shutdown
@@ -226,88 +226,123 @@ public class GamePriceScraper {
 	    
 	}
 
-	private static void scrapeGOG() {
-	    // Set up WebDriverManager to download and set up the ChromeDriver binary
-	    System.setProperty("webdriver.chrome.driver", "C:\\Users\\joomu\\Downloads\\chromedriver-win64\\chromedriver-win64\\chromedriver.exe");
-	
-	    ChromeOptions options = new ChromeOptions();
-	    options.addArguments("--headless"); // Run in headless mode (no browser UI)
-	
-	    WebDriver driver = new ChromeDriver(options);
-	
-	    try {
-	        driver.get("https://www.gog.com/en/game/the_witcher_3_wild_hunt_game_of_the_year_edition");
-	
-	        // Wait for the title and price elements to be present on the page
-	        WebElement titleElement = driver.findElement(By.cssSelector("h1.productcard-basics__title"));
-	        WebElement priceElement = driver.findElement(By.cssSelector("span.product-actions-price__final-amount"));
-	
-	        // Get the text of the elements, which should contain the title and the price
-	        String title = titleElement.getText();
-	        String price = priceElement.getText();
-	
-	        // Print the title and price
-	        System.out.println("Title: " + title + " - Price: " + price);
-	    } catch (Exception e) {
-	        System.err.println("Error scraping GOG: " + e.getMessage());
-	    } finally {
-	        // Close the browser
-	        driver.quit();
-	    }
-	}
+
 	private static void scrapeGOGAction() {
-	    WebDriverManager.chromedriver().setup();
-	    ChromeOptions options = new ChromeOptions();
-	    options.addArguments("--headless"); // Run in headless mode (no browser UI)
+		// Set up ChromeOptions
+		ChromeOptions options = new ChromeOptions();
+		options.setBinary("C:\\Users\\joomu\\AppData\\Local\\Chromium\\Application\\chrome.exe");
+		options.addArguments("--headless");
+		// Set the desired ChromeDriver version
+		WebDriverManager.chromedriver().setup();
 
-	    WebDriver driver = new ChromeDriver(options);
-	    int titlesScraped = 0;
-	    int pageNumber = 1;
+		// Initialize the ChromeDriver with the specified options
+		WebDriver driver = new ChromeDriver(options);
+		int gamesToScrape = 500;
+		int gamesScraped = 0;
+		int page = 1; // Start with page 1
+		String platform = "GOG"; // Set the platform to GOG
 
-	    try {
-	        while (titlesScraped < 500) {
-	            driver.get("https://www.gog.com/en/games?genres=action&page=" + pageNumber);
+		while (gamesScraped < gamesToScrape) {
+		    // Build the URL for the current page
+		    String url = "https://www.gog.com/en/games?genres=action&languages=en&hideDLCs=true&page=" + page;
+		    
+		    // Navigate to the GOG page
+		    driver.get(url);
+		    
+		    // Sleep to ensure the page loads completely
+		    try {
+		        Thread.sleep(20000); // Sleep for 10 seconds
+		    } catch (InterruptedException e) {
+		        e.printStackTrace();
+		    }
 
-	            // Use WebDriverWait to wait for the game tiles to appear
+		    // Find all product tiles
+		    List<WebElement> productTiles = driver.findElements(By.cssSelector("product-tile"));
 
-	            WebDriverWait wait = new WebDriverWait(driver, 40); // 10 seconds
-	            java.util.List<WebElement> gameTiles = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("product-tile")));
+		    // Iterate through the product tiles and extract information
+		    for (WebElement productTile : productTiles) {
+		        // Extract title
+		        WebElement titleElement = productTile.findElement(By.cssSelector("span[_ngcontent-gogcom-store-c43]"));
+		        String title = titleElement.getText();
 
-	            if (gameTiles.isEmpty()) {
-	                // No more games found, break the loop
-	                break;
-	            }
+		        // Extract final price
+		        WebElement finalPriceElement = productTile.findElement(By.cssSelector("span[_ngcontent-gogcom-store-c40]"));
+		        String price = finalPriceElement.getText();
+		        
+		        WebElement redirectionLinkElement = productTile.findElement(By.cssSelector("a.product-tile.product-tile--grid"));
+		        String redirectionLink = redirectionLinkElement.getAttribute("href");
+		        
+		        WebElement imageElement = productTile.findElement(By.cssSelector("img.ng-star-inserted"));
 
-	            for (WebElement gameTile : gameTiles) {
-	                if (titlesScraped >= 500) {
-	                    break; // If we have scraped 500 titles, exit the loop
-	                }
+		        // Get the 'src' attribute value (image URL)
+		        String imageUrl = imageElement.getAttribute("src");
+		        // Print or store the extracted information
+		        System.out.println("Title: " + title);
+		        System.out.println("Final Price: " + price);
+		        System.out.println("Link: " + redirectionLink);
+		        System.out.println("Image: " + imageUrl);
+		        System.out.println("==============================================");
+		        System.out.println("Game number: " + gamesScraped);
+		        gamesScraped++;
+		        Session session = HibernateUtil.getSessionFactory().openSession();
+                Transaction transaction = null;
 
-	                // Extract the title
-	                String title = gameTile.findElement(By.cssSelector(".product-tile__title")).getText();
+                try {
+                	transaction = session.beginTransaction();
+                    // Check if the game already exists
+                    String queryStr = "FROM Game WHERE title = :title AND platform = :platform";
+                    org.hibernate.query.Query<Game> query = session.createQuery(queryStr, Game.class);
+                    query.setParameter("title", title);
+                    query.setParameter("platform", platform);
+                    Game game = query.uniqueResult();
 
-	                // Extract the price
-	                String price = gameTile.findElement(By.cssSelector(".product-price__final .final-value")).getText();
+                    if (game == null) {
+                        // Create a new Game object if it doesn't exist
+                        game = new Game();
+                        game.setTitle(title);
+                        game.setPlatform(platform);
+                        
+                        game.setLastUpdated(LocalDateTime.now());
+                        game.setUrl(redirectionLink); 
+                        game.setImageUrl(imageUrl);
+                    }
 
-	                // Output the title and price
-	                System.out.println("Title: " + title + " - Price: " + price);
-	                titlesScraped++;
-	            }
+                    // Update the last updated time to now
+                    game.setLastUpdated(LocalDateTime.now());
+                    // Update or set the price and URL
+                    game.setPrice(price.isEmpty() ? null : price);
+                    game.setImageUrl(imageUrl);
+                    game.setUrl(redirectionLink); 
+                    // Save or update the game record
+                    session.saveOrUpdate(game);
+                    transaction.commit();
+                } catch (Exception e) {
+                	if (transaction != null) transaction.rollback();
+                    e.printStackTrace();
 
-	            pageNumber++; // Go to the next page
-	        }
-	    } catch (Exception e) {
-	        System.err.println("Error scraping GOG: " + e.getMessage());
-	    } finally {
-	        driver.quit(); // Ensure we close the driver after finishing
-	    }
-	}	
+                }finally {
+                	if (session != null) session.close();
+                    session.close();
+                }
+		    }
 
+		    // Check if the loop should exit
+		    if (gamesScraped >= gamesToScrape) {
+		        break;
+		    }
+
+		    // Increment the page number for the next iteration
+		    page++;
+		}
+		// Close the browser
+		driver.quit();
+
+	}
     private static void scrapeK4g() {
         // Set up ChromeOptions
         ChromeOptions options = new ChromeOptions();
         options.setBinary("C:\\Users\\joomu\\AppData\\Local\\Chromium\\Application\\chrome.exe");
-
+        options.addArguments("--headless");
         // Set the desired ChromeDriver version
         WebDriverManager.chromedriver().setup();
 
