@@ -7,8 +7,11 @@ document.addEventListener('DOMContentLoaded', function() {
           window.location.href = `product.html?search=${encodeURIComponent(searchTerm)}`;
 
       } else {
-          // Optionally, alert the user that they need to enter a search term
-          alert('Please enter a search term.');
+        Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Please enter a game name before searching!",
+          });
       }
   });
 
