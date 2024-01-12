@@ -1,7 +1,6 @@
 body {
     background-color: #f8f9fa00;
     margin: 0; /* Remove default margin */
-    overflow: hidden; /* Prevent scrolling in the background */
   }
   
   /* Style the video background */

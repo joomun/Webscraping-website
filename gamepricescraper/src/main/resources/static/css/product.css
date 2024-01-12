@@ -118,3 +118,30 @@ button:active {
     justify-content: center;
   }
   
+/* CSS for Pagination Buttons */
+.page-container {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .page-button {
+    background-color: #007bff;
+    color: #fff;
+    border: 1px solid #007bff;
+    padding: 5px 10px;
+    margin: 0 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+  }
+  
+  .page-button.active {
+    background-color: #fff;
+    color: #007bff;
+  }
+  
+  .page-info {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  
