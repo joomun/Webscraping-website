@@ -1,133 +1,89 @@
 body {
-    background-color: #f8f9fa;
-}
-
-.container {
-    margin-top: 100px;
-}
-
-.form-control {
-    border-radius: 0;
-}
-
-.btn-primary {
-    border-radius: 0;
-}
-
-/* Existing styles */
-/* ... */
-
-/* New hover effect for navbar links */
-.navbar-nav .nav-link:hover {
-    color: #f8f9fa; /* This is just an example color */
-    background-color: #333; /* Example background color on hover */
-    border-radius: 5px; /* Optional: if you want rounded corners */
-    padding: 5px; /* Optional: if you want some padding */
-    transition: all 0.3s; /* Smooth transition for the hover effect */
-}
-.deals-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px; /* Adjust the space between items */
-    margin-top: 20px;
-}
-
-.deal {
-    border: 1px solid #ddd;
-    padding: 10px;
-    width: 200px; /* Adjust the width as necessary */
-    text-align: center;
-}
-
-.deal img {
-    max-width: 100%;
+    background-color: #f8f9fa00;
+    margin: 0; /* Remove default margin */
+    overflow: hidden; /* Prevent scrolling in the background */
+  }
+  
+  /* Style the video background */
+  .video-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%; /* Set the width to 100% to cover the whole width of its container */
+    height: auto; /* Allow the height to adjust proportionally to maintain aspect ratio */
+    z-index: -1;
+    overflow: hidden;
+  }
+  
+  .video-background video {
+    width: 100%;
     height: auto;
-}
-
-.deal h5 {
-    margin: 10px 0;
-}
-
-
-#dealsCarousel {
-    width: 100%; /* Full width */
-    height: 75vh; /* 75% of the viewport height */
-}
-
-.carousel-inner {
-    width: 100%;
-    height: 100%;
-}
-
-.carousel-item {
-    width: 100%;
-    height: 100%;
-    transition: transform 0.5s ease;
-    
-}
-.carousel-item img {
-    width: 100%; /* Make the image full width of the .carousel-item */
-    height: 100%; /* Make the image full height of the .carousel-item */
-    object-fit: cover; 
-}
-.carousel-item:hover {
-    transform: scale(1.05); /* Scale up the item on hover */
-    cursor: pointer; /* Change cursor to indicate it's clickable */
-    background-color: rgba(0, 0, 0, 0.1); /* Optional: add a slight background on hover */
-}
-
-
-/* Custom CSS for centering the search box */
-.container {
+  }
+  
+  /* Style the content container */
+  .content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    text-align: center;
+    padding: 20px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* Use vh for full viewport height */
-}
 
-.search-container {
+    width: 50%; /* Set the width of the content to 50% of the page */
+  }
+  
+  /* Style the image container */
+  .image-container {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Style the search container */
+  .search-container {
     display: flex;
-    flex-direction: column; /* Stack the input and button vertically */
+    flex-direction: column;
     align-items: center;
-}
-
-.form-control {
-    margin-bottom: 1rem; /* Add some space between the input and the button */
-}
-
-
-/* Add a container for the image and the search bar */
-.image-container {
-    text-align: center; /* Center the image */
-    margin-bottom: 20px; /* Provide some spacing between the image and the search bar */
-}
-
-/* Style the search container */
-.search-container {
-    display: flex;
-    justify-content: center; /* Center the search bar horizontally */
-    margin-bottom: 20px; /* Provide some spacing between the search bar and the next content */
-    width: 50%;
-}
-
-/* Style the search input field */
-#searchInput {
+  }
+  
+  /* Style the search input field */
+  #searchInput {
     border: none;
-    border-radius: 24px; /* Rounded borders */
+    border-radius: 24px;
     padding: 10px 20px;
-    width: calc(100% - 40px); /* Full width minus padding */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Shadow effect */
-    margin-right: -1px; /* Align with button */
-}
-
-/* Style the search button */
-#searchBtn {
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    margin-bottom: 10px;
+  }
+  
+  /* Style the search button */
+  #searchBtn {
     border: none;
-    border-radius: 24px 24px 24px 24px; /* Right side rounded borders */
+    border-radius: 24px;
     padding: 10px 20px;
-    background-color: #4285f4; /* Google's button blue */
+    background-color: #4285f4;
     color: white;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Shadow effect */
-}
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+
+  /* Center the navbar vertically */
+.navbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+
+  footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Add other styling as needed */
+  }
+  

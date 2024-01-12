@@ -49,6 +49,8 @@ public class GameRequirements {
         return game;
     }
 
+    
+    
     public void setGame(Game game) {
         this.game = game;
     }

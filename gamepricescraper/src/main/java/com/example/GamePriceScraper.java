@@ -47,7 +47,7 @@ public class GamePriceScraper {
     }
     
 	private static void scrapeSteamAction() {
-	    int titlesToScrape = 500;
+	    int titlesToScrape = 600;
 	    int titlesScraped = 0;
 	    int start = 0; // Pagination parameter for Steam search URL
 	    String platform = "Steam";
@@ -132,6 +132,39 @@ public class GamePriceScraper {
 	                    // Save or update the game record
 	                    session.saveOrUpdate(game);
 	                    transaction.commit();
+	                    try {
+	                        // Start a new transaction for the Comparison table update
+	                        transaction = session.beginTransaction();
+
+	                        // Native SQL query for inserting into the Comparison table
+	                        String comparisonUpdateQuery = "INSERT INTO Comparison (original_game_id, original_game_name, original_platform, original_price, matched_game_id, matched_game_name, matched_platform, matched_price) "
+	                            + "SELECT "
+	                            + "    g1.id AS original_game_id, "
+	                            + "    g1.title AS original_game_name, "
+	                            + "    g1.platform AS original_platform, "
+	                            + "    g1.price AS original_price, "
+	                            + "    g2.id AS matched_game_id, "
+	                            + "    g2.title AS matched_game_name, "
+	                            + "    g2.platform AS matched_platform, "
+	                            + "    g2.price AS matched_price "
+	                            + "FROM "
+	                            + "    games g1 "
+	                            + "INNER JOIN "
+	                            + "    games g2 ON g1.title LIKE CONCAT('%', g2.title, '%') AND g1.platform <> g2.platform AND g1.id <> g2.id "
+	                            + "WHERE "
+	                            + "g1.id = :gameId";
+	                        // Execute the update
+	                        int updateCount = session.createNativeQuery(comparisonUpdateQuery)
+	                            .setParameter("gameId", game.getId()) // Ensure you bind the game ID of the current game
+	                            .executeUpdate();
+
+	                        transaction.commit();
+	                        System.out.println(updateCount + " rows inserted/updated in the Comparison table.");
+	                    	} catch (Exception e) {
+		                    	if (transaction != null) transaction.rollback();
+		                    	e.printStackTrace();
+	                    	} 
+	                    
 	                } catch (Exception e) {
 	                    if (transaction != null) transaction.rollback();
 	                    e.printStackTrace();
@@ -154,6 +187,7 @@ public class GamePriceScraper {
 	                        String reqQueryStr = "FROM GameRequirements WHERE game = :game";
 	                        org.hibernate.query.Query<GameRequirements> reqQuery = session.createQuery(reqQueryStr, GameRequirements.class);
 	                        reqQuery.setParameter("game", existingGame);
+	                        
 	                        gameRequirements = reqQuery.uniqueResult(); // Retrieve the single result
 
 	                        if (gameRequirements == null) {
@@ -171,6 +205,7 @@ public class GamePriceScraper {
 	                        for (Element req : requirementsList) {
 	                            String requirementType = req.select("strong").first().text().replace(":", "").trim();
 	                            String requirementDetail = req.ownText().trim(); 
+	                            
 	                            // Set the lastUpdated field to the current date and time
 	                            gameRequirements.setLastUpdated(LocalDateTime.now());
 	                            // Map each requirement to the corresponding field in GameRequirements
@@ -237,7 +272,7 @@ public class GamePriceScraper {
 
 		// Initialize the ChromeDriver with the specified options
 		WebDriver driver = new ChromeDriver(options);
-		int gamesToScrape = 500;
+		int gamesToScrape = 600;
 		int gamesScraped = 0;
 		int page = 1; // Start with page 1
 		String platform = "GOG"; // Set the platform to GOG
@@ -316,6 +351,41 @@ public class GamePriceScraper {
                     // Save or update the game record
                     session.saveOrUpdate(game);
                     transaction.commit();
+                    
+                    try {
+                        // Start a new transaction for the Comparison table update
+                        transaction = session.beginTransaction();
+
+                        // Native SQL query for inserting into the Comparison table
+                        String comparisonUpdateQuery = "INSERT INTO Comparison (original_game_id, original_game_name, original_platform, original_price, matched_game_id, matched_game_name, matched_platform, matched_price) "
+                            + "SELECT "
+                            + "    g1.id AS original_game_id, "
+                            + "    g1.title AS original_game_name, "
+                            + "    g1.platform AS original_platform, "
+                            + "    g1.price AS original_price, "
+                            + "    g2.id AS matched_game_id, "
+                            + "    g2.title AS matched_game_name, "
+                            + "    g2.platform AS matched_platform, "
+                            + "    g2.price AS matched_price "
+                            + "FROM "
+                            + "    games g1 "
+                            + "INNER JOIN "
+                            + "    games g2 ON g1.title LIKE CONCAT('%', g2.title, '%') AND g1.platform <> g2.platform AND g1.id <> g2.id "
+                            + "WHERE "
+                            + "g1.id = :gameId";
+                        // Execute the update
+                        int updateCount = session.createNativeQuery(comparisonUpdateQuery)
+                            .setParameter("gameId", game.getId()) // Ensure you bind the game ID of the current game
+                            .executeUpdate();
+
+                        transaction.commit();
+                        System.out.println(updateCount + " rows inserted/updated in the Comparison table.");
+                    	} catch (Exception e) {
+	                    	if (transaction != null) transaction.rollback();
+	                    	e.printStackTrace();
+                    	} finally {
+                    		if (session != null) session.close();
+                    	}
                 } catch (Exception e) {
                 	if (transaction != null) transaction.rollback();
                     e.printStackTrace();
@@ -349,7 +419,7 @@ public class GamePriceScraper {
         // Initialize the ChromeDriver with the specified options
         WebDriver driver = new ChromeDriver(options);
 
-        int gamesToScrape = 500;
+        int gamesToScrape = 600;
         int gamesScraped = 0;
         int page = 1; // Start with page 1
         String platform="K4G";
@@ -429,6 +499,41 @@ public class GamePriceScraper {
                     // Save or update the game record
                     session.saveOrUpdate(game);
                     transaction.commit();
+                    
+                    try {
+                        // Start a new transaction for the Comparison table update
+                        transaction = session.beginTransaction();
+
+                        // Native SQL query for inserting into the Comparison table
+                        String comparisonUpdateQuery = "INSERT INTO Comparison (original_game_id, original_game_name, original_platform, original_price, matched_game_id, matched_game_name, matched_platform, matched_price) "
+                            + "SELECT "
+                            + "    g1.id AS original_game_id, "
+                            + "    g1.title AS original_game_name, "
+                            + "    g1.platform AS original_platform, "
+                            + "    g1.price AS original_price, "
+                            + "    g2.id AS matched_game_id, "
+                            + "    g2.title AS matched_game_name, "
+                            + "    g2.platform AS matched_platform, "
+                            + "    g2.price AS matched_price "
+                            + "FROM "
+                            + "    games g1 "
+                            + "INNER JOIN "
+                            + "    games g2 ON g1.title LIKE CONCAT('%', g2.title, '%') AND g1.platform <> g2.platform AND g1.id <> g2.id "
+                            + "WHERE "
+                            + "g1.id = :gameId";
+                        // Execute the update
+                        int updateCount = session.createNativeQuery(comparisonUpdateQuery)
+                            .setParameter("gameId", game.getId()) // Ensure you bind the game ID of the current game
+                            .executeUpdate();
+
+                        transaction.commit();
+                        System.out.println(updateCount + " rows inserted/updated in the Comparison table.");
+                    	} catch (Exception e) {
+	                    	if (transaction != null) transaction.rollback();
+	                    	e.printStackTrace();
+                    	} finally {
+                    		if (session != null) session.close();
+                    	}
                 } catch (Exception e) {
                 	if (transaction != null) transaction.rollback();
                     e.printStackTrace();
@@ -459,59 +564,4 @@ public class GamePriceScraper {
     
     
 
-    private static void scrapeAmazon() {
-        String gameUrl = "https://www.amazon.com/Witcher-3-Wild-Hunt-Complete-PC/dp/B01K6010DO/ref=sr_1_3?crid=DV69O9DWPCVD&keywords=The%2BWitcher%2B3%3A%2BWild%2BHunt&qid=1700505473&sprefix=the%2Bwitcher%2B3%2Bwild%2Bhunt%2Caps%2C408&sr=8-3&th=1";
-        
-        try {
-            Document gamePage = Jsoup.connect(gameUrl)
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
-                .referrer("http://www.google.com")
-                .timeout(10 * 1000)
-                .get();
-
-            // Select the container that includes both the title and the price
-            Elements gameEditions = gamePage.select("div.game_area_purchase_game");
-
-            for (Element edition : gameEditions) {
-                // Extract the title
-                String title = edition.select("h1").text();
-
-                // Extract the price string
-                String priceText = edition.select("div.game_purchase_price").text();
-
-                // Check if the price string is not empty
-                if (!priceText.isEmpty()) {
-                    System.out.println("Game: " + title + " - Price: " + priceText);
-                } else {
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private static void scrapeWebsite(String url, String cssSelector) {
-        try {
-        	Document document = Jsoup.connect(url)
-        			  .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3")
-        			  .referrer("http://www.google.com")
-        			  .timeout(10 * 1000) // 10 seconds
-        			  .header("Accept", "text/html")
-		        	  .header("Accept-Encoding", "gzip, deflate, br")
-		        	  .header("Accept-Language", "en-US,en;q=0.5")
-		        	  .header("Connection", "keep-alive")
-		        	  .get();
-
-            Elements elements = document.select(cssSelector);
-            
-
-            for (Element element : elements) {
-                // Extract and process data from each element
-                String gameTitle = element.text(); // This is an example, adjust according to actual HTML structure
-                System.out.println(gameTitle);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

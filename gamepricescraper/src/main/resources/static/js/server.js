@@ -36,11 +36,26 @@ const pool = mysql.createPool({
 app.use(express.json());
 app.use(express.static('gamepricescraper/src/main/resources/static')); // Serve your static HTML
 app.use('/image', express.static(path.join(__dirname, '../../static/image')));
+app.use('/video', express.static(path.join(__dirname, '../../static/video')));
 app.use('/js', express.static(path.join(__dirname, '../../static/js')));
 app.use('/css', express.static(path.join(__dirname, '../../static/css')));
 
+const fifteenMinutesInMillis = 15 * 60 * 1000; // 15 minutes in milliseconds
+  
 // Endpoint to compile and run the Java program
-
+const checkExecutionTime = (req, res, next) => {
+    const currentTime = Date.now();
+  
+    if (currentTime - lastExecutionTime >= fifteenMinutesInMillis) {
+      // Allow the request to proceed
+      lastExecutionTime = currentTime;
+      next();
+    } else {
+      // Return an error response indicating the need to wait
+      res.status(429).send('Please wait for 15 minutes before running this again.');
+    }
+};
+  
 app.get('/compile-and-run', (req, res) => {
     // Inform the client that the compilation has started
     res.write('Compilation has started.\n');
@@ -84,6 +99,9 @@ app.get('/compile-and-run', (req, res) => {
             res.end();
         });
     });
+    setTimeout(() => {
+        lastExecutionTime = 0;
+      }, fifteenMinutesInMillis);
 });
 
 // Function to get deals from the database
