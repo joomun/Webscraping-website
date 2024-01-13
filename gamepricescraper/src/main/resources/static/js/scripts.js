@@ -79,22 +79,21 @@ function updateComparisonSection(comparisons) {
 
         // Check if the original game name is not a duplicate and display it
         if (!displayedGameNames.has(originalGameName)) {
-            const originalCompElement = createComparisonElement(originalGameName, originalGameName, comp.original_platform, comp.original_price, comp.original_url);
+            const originalCompElement = createComparisonElement(originalGameName, originalGameName, comp.original_platform, comp.original_price, comp.original_game_url);
             comparisonContainer.appendChild(originalCompElement);
             displayedGameNames.add(originalGameName); // Add the original game name to the set
         }
 
         // Check if the matched game name is not a duplicate and display it
         if (!displayedGameNames.has(matchedGameName)) {
-            const matchedCompElement = createComparisonElement(matchedGameName, matchedGameName, comp.matched_platform, comp.matched_price, comp.matched_url);
+            const matchedCompElement = createComparisonElement(matchedGameName, matchedGameName, comp.matched_platform, comp.matched_price, comp.matched_game_url);
             comparisonContainer.appendChild(matchedCompElement);
             displayedGameNames.add(matchedGameName); // Add the matched game name to the set
         }
     });
 }
 
-// Helper function to create a comparison element
-function createComparisonElement(gameName, gameDisplayName, platform, price, url) {
+function createComparisonElement(gameName, gameDisplayName, platform, price, originalGameUrl, matchedGameUrl) {
     const compElement = document.createElement('div');
     compElement.className = 'comparison-item';
 
@@ -110,6 +109,16 @@ function createComparisonElement(gameName, gameDisplayName, platform, price, url
         platformLogo = 'default-logo.png'; // Replace with a default logo URL
     }
 
+    // Check if the original and matched game URLs are defined
+    console.log('Original URL:', originalGameUrl);
+    console.log('Matched URL:', matchedGameUrl);
+
+    const originalGameButton = originalGameUrl ? `<a href="${originalGameUrl}" target="_blank" class="btn btn-primary">View Original Version</a>` : '';
+    const matchedGameButton = matchedGameUrl ? `<a href="${matchedGameUrl}" target="_blank" class="btn btn-primary">View Matched Version</a>` : '';
+
+    console.log('Original Game Button:', originalGameButton);
+    console.log('Matched Game Button:', matchedGameButton);
+
     compElement.innerHTML = `
         <div class="comparison-content">
             <div class="comparison-left">
@@ -119,13 +128,15 @@ function createComparisonElement(gameName, gameDisplayName, platform, price, url
             </div>
             <div class="comparison-right">
                 <img src="${platformLogo}" alt="${platform} Logo" style="width: 40px; height: 40px;">
-                <a href="${url}" target="_blank" class="btn btn-primary">View this version</a> <!-- Use the URL from the 'url' parameter -->
+                ${originalGameButton}
+                ${matchedGameButton}
             </div>
         </div>
     `;
 
     return compElement;
 }
+
 
 
 

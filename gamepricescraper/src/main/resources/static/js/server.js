@@ -206,6 +206,7 @@ app.get('/api/product/:id', async (req, res) => {
             res.status(404).json({ message: 'Comparison not found' });
             return; // Stop the execution here
         }
+
         console.log('Matching comparison:', matchingComparison);
 
         // Fetch matched_game_name based on the provided productId
@@ -237,24 +238,45 @@ app.get('/api/product/:id', async (req, res) => {
             WHERE 
                 matched_game_name = ?`, [matchedGameName]);
 
+        // Initialize an array to store comparison details with URLs
+        const comparisonDetailsWithUrls = [];
+
+        for (const entry of matchingEntries) {
+            // Query to get original game details based on original_game_id
+            const [originalGameDetails] = await pool.query('SELECT id, title, price, platform, image_url, url FROM games WHERE id = ?', [entry.original_game_id]);
+
+            // Query to get matched game details based on matched_game_id
+            const [matchedGameDetails] = await pool.query('SELECT id, title, price, platform, image_url, url FROM games WHERE id = ?', [entry.matched_game_id]);
+
+            // Construct the comparison detail object with the URL for both original and matched games
+            const comparisonDetailWithUrls = {
+                original_game_id: entry.original_game_id,
+                original_game_name: entry.original_game_name,
+                original_platform: entry.original_platform,
+                original_price: entry.original_price,
+                matched_game_id: entry.matched_game_id,
+                matched_game_name: entry.matched_game_name,
+                matched_platform: entry.matched_platform,
+                matched_price: entry.matched_price,
+                original_game_url: originalGameDetails[0].url, // Fetch the URL for original game
+                matched_game_url: matchedGameDetails[0].url, // Fetch the URL for matched game
+            };
+
+            comparisonDetailsWithUrls.push(comparisonDetailWithUrls);
+        }
+
         // Query to get product details from the games table
         const [gamesDetails] = await pool.query('SELECT id, title, price, platform, image_url, url FROM games WHERE id = ?', [productId]);
 
         // Query to get game requirements from the game_requirements table
         const [requirementsDetails] = await pool.query('SELECT * FROM game_requirements WHERE game_id = ?', [productId]);
 
-        // Query to get original game details based on original_game_id
-        const [originalGameDetails] = await pool.query('SELECT id, title, price, platform, image_url, url FROM games WHERE id = ?', [matchingEntries[0].original_game_id]);
-
-        // Combine the initial comparison details and additional entries
-        const allComparisonDetails = matchingEntries.concat(matchingEntries);
-
         // Combine the details into a single object to send as response
         const response = {
             product: gamesDetails[0],
             requirements: requirementsDetails[0] || {},
-            comparisons: allComparisonDetails,
-            original_game: originalGameDetails[0] || null, // Add original game details
+            comparisons: comparisonDetailsWithUrls, // Use the array with URLs
+            original_game: null, // There may be multiple original games, so set it to null
         };
 
         // Send the response
@@ -268,6 +290,8 @@ app.get('/api/product/:id', async (req, res) => {
         }
     }
 });
+
+
 
 
 
