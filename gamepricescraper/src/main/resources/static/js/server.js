@@ -13,7 +13,7 @@ const connection = mysql.createConnection({
     user: 'root',
     password: '70Leo@3878',
     database: 'Game_comparison'
-  });
+});
 
 const dbConfig = {
     host: 'localhost',
@@ -41,21 +41,21 @@ app.use('/js', express.static(path.join(__dirname, '../../static/js')));
 app.use('/css', express.static(path.join(__dirname, '../../static/css')));
 
 const fifteenMinutesInMillis = 15 * 60 * 1000; // 15 minutes in milliseconds
-  
+
 // Endpoint to compile and run the Java program
 const checkExecutionTime = (req, res, next) => {
     const currentTime = Date.now();
-  
+
     if (currentTime - lastExecutionTime >= fifteenMinutesInMillis) {
-      // Allow the request to proceed
-      lastExecutionTime = currentTime;
-      next();
+        // Allow the request to proceed
+        lastExecutionTime = currentTime;
+        next();
     } else {
-      // Return an error response indicating the need to wait
-      res.status(429).send('Please wait for 15 minutes before running this again.');
+        // Return an error response indicating the need to wait
+        res.status(429).send('Please wait for 15 minutes before running this again.');
     }
 };
-  
+
 app.get('/compile-and-run', (req, res) => {
     // Inform the client that the compilation has started
     res.write('Compilation has started.\n');
@@ -101,7 +101,7 @@ app.get('/compile-and-run', (req, res) => {
     });
     setTimeout(() => {
         lastExecutionTime = 0;
-      }, fifteenMinutesInMillis);
+    }, fifteenMinutesInMillis);
 });
 
 // Function to get deals from the database
@@ -138,10 +138,10 @@ app.get('/search', async (req, res) => {
     searchTerm = typeof searchTerm === 'string' ? searchTerm : '';
     try {
         const [results] = await pool.query(`SELECT * FROM games WHERE title LIKE CONCAT('%', ?, '%')`, [searchTerm]);
-        
+
         // Log the results
         console.log("Search Results:", results);
-        
+
         if (results.length > 0) {
             res.json(results);
         } else {
@@ -184,24 +184,66 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-  
+
 
 app.get('/api/product/:id', async (req, res) => {
     const productId = req.params.id;
     try {
-        // Query to get product details from the games table
-        const [gamesDetails] = await pool.query('SELECT id, title, price, platform, image_url, url FROM games WHERE id = ?', [productId]);
-        
-        // If no game is found, send a 404 error and stop further execution
-        if (gamesDetails.length === 0) {
-            res.status(404).json({ message: 'Game not found' });
+        let matchedGameName = '';
+
+        // Check if the provided productId matches either matched_game_id or original_game_id in the Comparison table
+        const matchingComparison = await pool.query(`
+            SELECT 
+                original_game_id, 
+                matched_game_id
+            FROM 
+                Comparison
+            WHERE 
+                original_game_id = ? OR matched_game_id = ?`, [productId, productId]);
+
+        if (matchingComparison.length === 0) {
+            // If no matching comparison is found, send a 404 error
+            res.status(404).json({ message: 'Comparison not found' });
             return; // Stop the execution here
         }
-        
+        console.log('Matching comparison:', matchingComparison);
+
+        // Fetch matched_game_name based on the provided productId
+        const [matchedGameNameResult] = await pool.query(`
+            SELECT 
+                matched_game_name
+            FROM 
+                Comparison
+            WHERE 
+                original_game_id = ? OR matched_game_id = ?`, [productId, productId]);
+
+        if (matchedGameNameResult.length > 0) {
+            matchedGameName = matchedGameNameResult[0].matched_game_name;
+        }
+
+        // Fetch all entries from the Comparison table that have the same matched_game_name
+        const [matchingEntries] = await pool.query(`
+            SELECT 
+                original_game_id, 
+                original_game_name, 
+                original_platform, 
+                original_price, 
+                matched_game_id, 
+                matched_game_name, 
+                matched_platform, 
+                matched_price
+            FROM 
+                Comparison
+            WHERE 
+                matched_game_name = ?`, [matchedGameName]);
+
+        // Query to get product details from the games table
+        const [gamesDetails] = await pool.query('SELECT id, title, price, platform, image_url, url FROM games WHERE id = ?', [productId]);
+
         // Query to get game requirements from the game_requirements table
         const [requirementsDetails] = await pool.query('SELECT * FROM game_requirements WHERE game_id = ?', [productId]);
-        
-        // Query to get comparison details
+
+        // Query to get comparison details from the 'games' table
         const [comparisonDetails] = await pool.query(`
             SELECT 
                 g1.id AS original_game_id, 
@@ -212,7 +254,7 @@ app.get('/api/product/:id', async (req, res) => {
                 g2.title AS matched_game_name, 
                 g2.platform AS matched_platform, 
                 g2.price AS matched_price,
-                g2.url AS matched_url  -- Include the URL from the matching game
+                g2.url AS matched_url
             FROM 
                 games g1 
             INNER JOIN 
@@ -220,16 +262,19 @@ app.get('/api/product/:id', async (req, res) => {
             WHERE 
                 g1.id = ?`, [productId]);
 
+        // Combine the initial comparison details and additional entries
+        const allComparisonDetails = comparisonDetails.concat(matchingEntries);
+
         // Combine the details into a single object to send as response
         const response = {
             product: gamesDetails[0],
             requirements: requirementsDetails[0] || {},
-            comparisons: comparisonDetails
+            comparisons: allComparisonDetails
         };
 
         // Send the response
         res.json(response);
-        console.log('Response:', response)
+        console.log('Response:', response);
     } catch (error) {
         console.error('Error fetching game details:', error);
         // Only send the error response if no response has been sent yet
@@ -238,6 +283,16 @@ app.get('/api/product/:id', async (req, res) => {
         }
     }
 });
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -264,11 +319,11 @@ app.get('/product-detail.html', (req, res) => {
 
 app.use((err, req, res, next) => {
     if (res.headersSent) {
-      return next(err);
+        return next(err);
     }
     res.status(500).send('An error occurred');
-  });
-  
+});
+
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}/`);
