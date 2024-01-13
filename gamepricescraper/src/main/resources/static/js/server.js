@@ -243,33 +243,18 @@ app.get('/api/product/:id', async (req, res) => {
         // Query to get game requirements from the game_requirements table
         const [requirementsDetails] = await pool.query('SELECT * FROM game_requirements WHERE game_id = ?', [productId]);
 
-        // Query to get comparison details from the 'games' table
-        const [comparisonDetails] = await pool.query(`
-            SELECT 
-                g1.id AS original_game_id, 
-                g1.title AS original_game_name, 
-                g1.platform AS original_platform, 
-                g1.price AS original_price, 
-                g2.id AS matched_game_id, 
-                g2.title AS matched_game_name, 
-                g2.platform AS matched_platform, 
-                g2.price AS matched_price,
-                g2.url AS matched_url
-            FROM 
-                games g1 
-            INNER JOIN 
-                games g2 ON g1.title = g2.title AND g1.id <> g2.id
-            WHERE 
-                g1.id = ?`, [productId]);
+        // Query to get original game details based on original_game_id
+        const [originalGameDetails] = await pool.query('SELECT id, title, price, platform, image_url, url FROM games WHERE id = ?', [matchingEntries[0].original_game_id]);
 
         // Combine the initial comparison details and additional entries
-        const allComparisonDetails = comparisonDetails.concat(matchingEntries);
+        const allComparisonDetails = matchingEntries.concat(matchingEntries);
 
         // Combine the details into a single object to send as response
         const response = {
             product: gamesDetails[0],
             requirements: requirementsDetails[0] || {},
-            comparisons: allComparisonDetails
+            comparisons: allComparisonDetails,
+            original_game: originalGameDetails[0] || null, // Add original game details
         };
 
         // Send the response
@@ -283,12 +268,6 @@ app.get('/api/product/:id', async (req, res) => {
         }
     }
 });
-
-
-
-
-
-
 
 
 

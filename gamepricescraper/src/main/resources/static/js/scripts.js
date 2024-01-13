@@ -72,37 +72,62 @@ function getIconForRequirement(key) {
 
 function updateComparisonSection(comparisons) {
     const comparisonContainer = document.getElementById('comparison-container'); // make sure this container exists in your HTML
+    const displayedGameNames = new Set(); // Create a set to track displayed game names
     comparisons.forEach(comp => {
-        const compElement = document.createElement('div');
-        compElement.className = 'comparison-item';
+        const originalGameName = comp.original_game_name;
+        const matchedGameName = comp.matched_game_name;
 
-        // Define platform-specific logos based on platform name
-        let platformLogo = '';
-        if (comp.matched_platform === 'Steam') {
-            platformLogo = '/image/steam.png'; // Replace with the actual Steam logo URL
-        } else if (comp.matched_platform === 'GOG') {
-            platformLogo = '/image/GOG.com_Logo.png'; // Replace with the actual GOG logo URL
-        } else if (comp.matched_platform === 'K4G') {
-            platformLogo = '/image/K4G.jpg'; // Replace with the actual K4G logo URL
-        } else {
-            platformLogo = 'default-logo.png'; // Replace with a default logo URL
+        // Check if the original game name is not a duplicate and display it
+        if (!displayedGameNames.has(originalGameName)) {
+            const originalCompElement = createComparisonElement(originalGameName, originalGameName, comp.original_platform, comp.original_price, comp.original_url);
+            comparisonContainer.appendChild(originalCompElement);
+            displayedGameNames.add(originalGameName); // Add the original game name to the set
         }
 
-        compElement.innerHTML = `
-            <div class="comparison-content">
-                <div class="comparison-left">
-                    <p><strong>${comp.matched_game_name}</strong></p>
-                    <p>Price: $${parseFloat(comp.matched_price).toFixed(2)}</p>
-                </div>
-                <div class="comparison-right">
-                    <img src="${platformLogo}" alt="${comp.matched_platform} Logo" style="width: 40px; height: 40px;">
-                    <a href="${comp.matched_url}" target="_blank" class="btn btn-primary">View this version</a> <!-- Use the URL from comp.matched_url -->
-                </div>
-            </div>
-        `;
-        comparisonContainer.appendChild(compElement);
+        // Check if the matched game name is not a duplicate and display it
+        if (!displayedGameNames.has(matchedGameName)) {
+            const matchedCompElement = createComparisonElement(matchedGameName, matchedGameName, comp.matched_platform, comp.matched_price, comp.matched_url);
+            comparisonContainer.appendChild(matchedCompElement);
+            displayedGameNames.add(matchedGameName); // Add the matched game name to the set
+        }
     });
 }
+
+// Helper function to create a comparison element
+function createComparisonElement(gameName, gameDisplayName, platform, price, url) {
+    const compElement = document.createElement('div');
+    compElement.className = 'comparison-item';
+
+    // Define platform-specific logos based on platform name
+    let platformLogo = '';
+    if (platform === 'Steam') {
+        platformLogo = '/image/steam.png'; // Replace with the actual Steam logo URL
+    } else if (platform === 'GOG') {
+        platformLogo = '/image/GOG.com_Logo.png'; // Replace with the actual GOG logo URL
+    } else if (platform === 'K4G') {
+        platformLogo = '/image/K4G.jpg'; // Replace with the actual K4G logo URL
+    } else {
+        platformLogo = 'default-logo.png'; // Replace with a default logo URL
+    }
+
+    compElement.innerHTML = `
+        <div class="comparison-content">
+            <div class="comparison-left">
+                <p><strong>${gameDisplayName}</strong></p>
+                <p>Platform: ${platform}</p>
+                <p>Price: $${parseFloat(price).toFixed(2)}</p>
+            </div>
+            <div class="comparison-right">
+                <img src="${platformLogo}" alt="${platform} Logo" style="width: 40px; height: 40px;">
+                <a href="${url}" target="_blank" class="btn btn-primary">View this version</a> <!-- Use the URL from the 'url' parameter -->
+            </div>
+        </div>
+    `;
+
+    return compElement;
+}
+
+
 
 
 
