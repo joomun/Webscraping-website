@@ -11,39 +11,47 @@ fetch(`/api/product/${productId}`)
 
 
 function updateProductDetails(responseData) {
-    // Assuming responseData is the entire response object from the API
     const product = responseData.product;
-    const requirements = responseData.requirements;
 
     // Update image
     const imageElement = document.querySelector('.card-img-top');
-    // Assuming you add an image URL in your database and API response
-    imageElement.src = product.image_url || 'default-image.jpg'; // Fallback to a default image if undefined
-    // Update price
-    const priceElement = document.querySelector('.fs-5.mb-5 span');
-    priceElement.textContent = product.price ? `$${product.price.toFixed(2)}` : 'Free';
+    imageElement.src = product.image_url || 'default-image.jpg';
 
     // Update title
     const titleElement = document.querySelector('.display-5.fw-bolder');
-    titleElement.textContent = product.title || 'Default Title'; // Fallback to a default title if undefined
+    titleElement.textContent = product.title || 'Default Title';
+
+    // Update price
+    const priceElement = document.querySelector('.fs-5.mb-5 span');
+    if (product.price !== null && product.price !== undefined && !isNaN(Number(product.price))) {
+        const price = Number(product.price).toFixed(2);
+        priceElement.textContent = `$${price}`;
+    } else {
+        priceElement.textContent = 'Default Price';
+    }
 
     // Update game requirements
     const requirementsElement = document.querySelector('.lead');
-    requirementsElement.innerHTML = requirements ? createRequirementsTable(requirements) : 'No requirements available.';
+    requirementsElement.innerHTML = responseData.requirements ? createRequirementsTable(responseData.requirements) : 'No minimum requirements.';
 }
+    
+    
     
 function createRequirementsTable(requirements) {
     let tableHtml = '<table class="table">';
-    for (const key in requirements) {
-        if (requirements.hasOwnProperty(key)) {
-            const value = requirements[key] ? requirements[key] : 'No minimum requirements';
-            const icon = getIconForRequirement(key);
-            tableHtml += `<tr><th><i class="${icon}"></i> ${key.toUpperCase()}</th><td>${value}</td></tr>`;
-        }
-    }
+    const defaultRequirementText = 'No requirements'; // Set the default text for missing requirements
+    const keys = ['os', 'processor', 'memory', 'graphics', 'directx', 'network', 'storage']; // List all possible keys
+
+    keys.forEach(key => {
+        const value = requirements[key] || defaultRequirementText;
+        const icon = getIconForRequirement(key);
+        tableHtml += `<tr><th><i class="${icon}"></i> ${key.toUpperCase()}</th><td>${value}</td></tr>`;
+    });
+
     tableHtml += '</table>';
     return tableHtml;
 }
+
 
 function getIconForRequirement(key) {
     const icons = {
@@ -56,4 +64,19 @@ function getIconForRequirement(key) {
         storage: 'fas fa-hdd'
     };
     return icons[key.toLowerCase()] || 'fas fa-question-circle';
+}
+
+
+function updateComparisonSection(comparisons) {
+    const comparisonContainer = document.getElementById('comparison-container'); // make sure this container exists in your HTML
+    comparisons.forEach(comp => {
+        const compElement = document.createElement('div');
+        compElement.className = 'comparison-item';
+        compElement.innerHTML = `
+            <p><strong>${comp.matched_game_name}</strong> - ${comp.matched_platform}</p>
+            <p>Price: $${comp.matched_price.toFixed(2)}</p>
+            <a href="/product-detail.html?productId=${comp.matched_game_id}">View this version</a>
+        `;
+        comparisonContainer.appendChild(compElement);
+    });
 }
