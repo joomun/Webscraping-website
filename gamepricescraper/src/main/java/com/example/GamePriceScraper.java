@@ -16,6 +16,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -307,10 +308,30 @@ public class GamePriceScraper {
 		        WebElement redirectionLinkElement = productTile.findElement(By.cssSelector("a.product-tile.product-tile--grid"));
 		        String redirectionLink = redirectionLinkElement.getAttribute("href");
 		        
-		        WebElement imageElement = productTile.findElement(By.cssSelector("img.ng-star-inserted"));
+		        // Extract the image URL
+		        // Initialize imageUrl with the default value
+		        String imageUrl = "/image/logo-2.png"; // Default image path
 
-		        // Get the 'src' attribute value (image URL)
-		        String imageUrl = imageElement.getAttribute("src");
+		        // Attempt to extract the image URL from <source> elements
+		        List<WebElement> imageSources = productTile.findElements(By.cssSelector("source[media='(min-width:768px)']"));
+		        if (!imageSources.isEmpty()) {
+		            String srcsetValue = imageSources.get(0).getAttribute("srcset");
+		            if (srcsetValue != null && !srcsetValue.isEmpty()) {
+		                imageUrl = srcsetValue.split(",")[0].split(" ")[0];
+		            }
+		        } else {
+		            // Attempt to extract the image URL from <img> element
+		            try {
+		                WebElement imageElement = productTile.findElement(By.cssSelector("img.ng-star-inserted"));
+		                String srcValue = imageElement.getAttribute("src");
+		                if (srcValue != null && !srcValue.isEmpty() && !srcValue.startsWith("data:image")) {
+		                    imageUrl = srcValue;
+		                }
+		            } catch (NoSuchElementException e) {
+		                System.out.println("No image element found for this product tile, using default image.");
+		            }
+		        }
+		        
 		        // Print or store the extracted information
 		        System.out.println("Title: " + title);
 		        System.out.println("Final Price: " + price);
@@ -346,6 +367,24 @@ public class GamePriceScraper {
                     game.setLastUpdated(LocalDateTime.now());
                     // Update or set the price and URL
                     game.setPrice(price.isEmpty() ? null : price);
+                    
+                    if (!imageSources.isEmpty()) {
+    		            String srcsetValue = imageSources.get(0).getAttribute("srcset");
+    		            if (srcsetValue != null && !srcsetValue.isEmpty()) {
+    		                imageUrl = srcsetValue.split(",")[0].split(" ")[0];
+    		            }
+    		        } else {
+    		            // Attempt to extract the image URL from <img> element
+    		            try {
+    		                WebElement imageElement = productTile.findElement(By.cssSelector("img.ng-star-inserted"));
+    		                String srcValue = imageElement.getAttribute("src");
+    		                if (srcValue != null && !srcValue.isEmpty() && !srcValue.startsWith("data:image")) {
+    		                    imageUrl = srcValue;
+    		                }
+    		            } catch (NoSuchElementException e) {
+    		                System.out.println("No image element found for this product tile, using default image.");
+    		            }
+    		        }
                     game.setImageUrl(imageUrl);
                     game.setUrl(redirectionLink); 
                     // Save or update the game record
@@ -449,9 +488,18 @@ public class GamePriceScraper {
                 WebElement priceElement = container.findElement(By.className("Price_price__3S67l"));
                 String price = priceElement.getText();
 
-                // Extract image link
                 WebElement imageElement = container.findElement(By.tagName("img"));
                 String imageLink = imageElement.getAttribute("src");
+
+                // Specific link that you want to replace with the default logo
+                String specificLink = "https://k4g.com/images/instant-delivery.svg";
+                String defaultLogoPath = "/image/logo-2.png"; // Path to your default logo
+
+                // Check if the extracted link is the specific link you want to replace
+                if (imageLink != null && imageLink.equals(specificLink)) {
+                    imageLink = defaultLogoPath; // Use the default logo path instead
+                }
+
 
                 WebElement coverLinkElement = container.findElement(By.className("CardCover_coverLink__QogOK"));
 
@@ -469,7 +517,7 @@ public class GamePriceScraper {
                 gamesScraped++;
                 Session session = HibernateUtil.getSessionFactory().openSession();
                 Transaction transaction = null;
-
+                
                 try {
                 	transaction = session.beginTransaction();
                     // Check if the game already exists

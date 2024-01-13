@@ -80,9 +80,12 @@ body {
   
 
   footer {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     width: 100%;
     /* Add other styling as needed */
+    background-color: #000; /* Example background color */
+    color: #fff; /* Example text color */
+    text-align: center;
+    padding: 10px 0; /* Example padding */
   }
-  
