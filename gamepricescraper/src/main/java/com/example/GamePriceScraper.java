@@ -37,10 +37,10 @@ public class GamePriceScraper {
 
 
         // Submit each scrape task to the executor service
-        //executorService.submit(() -> scrapeGOGAction());
-        //executorService.submit(() -> scrapeK4g());
-        //executorService.submit(() -> scrapeAmazon());
-        //executorService.submit(() -> scrapeSteamAction());
+        executorService.submit(() -> scrapeGOGAction());
+        executorService.submit(() -> scrapeK4g());
+        
+        executorService.submit(() -> scrapeSteamAction());
         //executorService.submit(() -> scrapeGamivo());
 
         // Initiates an orderly shutdown
@@ -51,7 +51,7 @@ public class GamePriceScraper {
         // Set up ChromeOptions
         ChromeOptions options = new ChromeOptions();
         options.setBinary("C:\\Users\\joomu\\AppData\\Local\\Chromium\\Application\\chrome.exe");
-        //options.addArguments("--headless");
+        options.addArguments("--headless");
 
         // Set the desired ChromeDriver version
         WebDriverManager.chromedriver().setup();

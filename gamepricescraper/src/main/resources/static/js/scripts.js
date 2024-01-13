@@ -5,6 +5,10 @@ fetch(`/api/product/${productId}`)
     .then(response => response.json())
     .then(product => {
         updateProductDetails(product);
+
+        if (product.comparisons) {
+            updateComparisonSection(product.comparisons);
+        }
     })
     .catch(error => console.error('Error:', error));
 
@@ -27,7 +31,7 @@ function updateProductDetails(responseData) {
         const price = Number(product.price).toFixed(2);
         priceElement.textContent = `$${price}`;
     } else {
-        priceElement.textContent = 'Default Price';
+        priceElement.textContent = 'Free';
     }
 
     // Update game requirements
@@ -66,17 +70,40 @@ function getIconForRequirement(key) {
     return icons[key.toLowerCase()] || 'fas fa-question-circle';
 }
 
-
 function updateComparisonSection(comparisons) {
     const comparisonContainer = document.getElementById('comparison-container'); // make sure this container exists in your HTML
     comparisons.forEach(comp => {
         const compElement = document.createElement('div');
         compElement.className = 'comparison-item';
+
+        // Define platform-specific logos based on platform name
+        let platformLogo = '';
+        if (comp.matched_platform === 'Steam') {
+            platformLogo = '/image/steam.png'; // Replace with the actual Steam logo URL
+        } else if (comp.matched_platform === 'GOG') {
+            platformLogo = '/image/GOG.com_Logo.png'; // Replace with the actual GOG logo URL
+        } else if (comp.matched_platform === 'K4G') {
+            platformLogo = '/image/K4G.jpg'; // Replace with the actual K4G logo URL
+        } else {
+            platformLogo = 'default-logo.png'; // Replace with a default logo URL
+        }
+
         compElement.innerHTML = `
-            <p><strong>${comp.matched_game_name}</strong> - ${comp.matched_platform}</p>
-            <p>Price: $${comp.matched_price.toFixed(2)}</p>
-            <a href="/product-detail.html?productId=${comp.matched_game_id}">View this version</a>
+            <div class="comparison-content">
+                <div class="comparison-left">
+                    <p><strong>${comp.matched_game_name}</strong></p>
+                    <p>Price: $${parseFloat(comp.matched_price).toFixed(2)}</p>
+                </div>
+                <div class="comparison-right">
+                    <img src="${platformLogo}" alt="${comp.matched_platform} Logo" style="width: 40px; height: 40px;">
+                    <a href="${comp.matched_url}" target="_blank" class="btn btn-primary">View this version</a> <!-- Use the URL from comp.matched_url -->
+                </div>
+            </div>
         `;
         comparisonContainer.appendChild(compElement);
     });
 }
+
+
+
+

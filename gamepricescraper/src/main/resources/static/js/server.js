@@ -145,7 +145,8 @@ app.get('/search', async (req, res) => {
         if (results.length > 0) {
             res.json(results);
         } else {
-            res.status(404).send('No games found with that title');
+            // If no games are found, redirect to the "no search results found" page
+            return res.redirect('/no-search-results.html');
         }
     } catch (error) {
         console.error(error);
@@ -156,12 +157,17 @@ app.get('/search', async (req, res) => {
 
 
 
+
 app.get('/api/products', async (req, res) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = 12; // Set the limit to 12 items per page
     const offset = (page - 1) * limit;
     try {
         const [products] = await pool.execute('SELECT * FROM games LIMIT ?, ?', [offset, limit]);
+        if (products.length === 0) {
+            // If no products are found, redirect to the "no product found" page
+            return res.redirect('/no-product-found.html');
+        }
         const [totalItemsResult] = await pool.execute('SELECT COUNT(*) AS total FROM games');
         const totalItems = totalItemsResult[0].total;
         const totalPages = Math.ceil(totalItems / limit);
@@ -177,34 +183,63 @@ app.get('/api/products', async (req, res) => {
         res.status(500).send('Error fetching products');
     }
 });
+
   
 
 app.get('/api/product/:id', async (req, res) => {
     const productId = req.params.id;
     try {
         // Query to get product details from the games table
-        const [gamesDetails] = await pool.query('SELECT id, title, price, platform,image_url FROM games WHERE id = ?', [productId]);
+        const [gamesDetails] = await pool.query('SELECT id, title, price, platform, image_url, url FROM games WHERE id = ?', [productId]);
         
-        // If no game is found, return a 404 error
+        // If no game is found, send a 404 error and stop further execution
         if (gamesDetails.length === 0) {
-            return res.status(404).json({ message: 'Game not found' });
+            res.status(404).json({ message: 'Game not found' });
+            return; // Stop the execution here
         }
         
         // Query to get game requirements from the game_requirements table
         const [requirementsDetails] = await pool.query('SELECT * FROM game_requirements WHERE game_id = ?', [productId]);
         
+        // Query to get comparison details
+        const [comparisonDetails] = await pool.query(`
+            SELECT 
+                g1.id AS original_game_id, 
+                g1.title AS original_game_name, 
+                g1.platform AS original_platform, 
+                g1.price AS original_price, 
+                g2.id AS matched_game_id, 
+                g2.title AS matched_game_name, 
+                g2.platform AS matched_platform, 
+                g2.price AS matched_price,
+                g2.url AS matched_url  -- Include the URL from the matching game
+            FROM 
+                games g1 
+            INNER JOIN 
+                games g2 ON g1.title = g2.title AND g1.id <> g2.id
+            WHERE 
+                g1.id = ?`, [productId]);
+
         // Combine the details into a single object to send as response
         const response = {
             product: gamesDetails[0],
-            requirements: requirementsDetails[0] || {}
+            requirements: requirementsDetails[0] || {},
+            comparisons: comparisonDetails
         };
 
+        // Send the response
         res.json(response);
+        console.log('Response:', response)
     } catch (error) {
         console.error('Error fetching game details:', error);
-        res.status(500).json({ message: 'Error fetching game details', error: error.message });
+        // Only send the error response if no response has been sent yet
+        if (!res.headersSent) {
+            res.status(500).json({ message: 'Error fetching game details', error: error.message });
+        }
     }
 });
+
+
 
 
 
