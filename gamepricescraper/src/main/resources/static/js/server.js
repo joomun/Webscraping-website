@@ -179,6 +179,35 @@ app.get('/api/products', async (req, res) => {
 });
   
 
+app.get('/api/product/:id', async (req, res) => {
+    const productId = req.params.id;
+    try {
+        // Query to get product details from the games table
+        const [gamesDetails] = await pool.query('SELECT id, title, price, platform,image_url FROM games WHERE id = ?', [productId]);
+        
+        // If no game is found, return a 404 error
+        if (gamesDetails.length === 0) {
+            return res.status(404).json({ message: 'Game not found' });
+        }
+        
+        // Query to get game requirements from the game_requirements table
+        const [requirementsDetails] = await pool.query('SELECT * FROM game_requirements WHERE game_id = ?', [productId]);
+        
+        // Combine the details into a single object to send as response
+        const response = {
+            product: gamesDetails[0],
+            requirements: requirementsDetails[0] || {}
+        };
+
+        res.json(response);
+    } catch (error) {
+        console.error('Error fetching game details:', error);
+        res.status(500).json({ message: 'Error fetching game details', error: error.message });
+    }
+});
+
+
+
 // Serve index.html at the root
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../../templates/index.html'));
@@ -194,6 +223,9 @@ app.get('/product.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../../templates/product.html'));
 });
 
+app.get('/product-detail.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../templates/product-detail.html'));
+});
 
 app.use((err, req, res, next) => {
     if (res.headersSent) {

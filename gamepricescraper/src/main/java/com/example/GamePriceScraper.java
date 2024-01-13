@@ -37,15 +37,92 @@ public class GamePriceScraper {
 
 
         // Submit each scrape task to the executor service
-        executorService.submit(() -> scrapeGOGAction());
-        executorService.submit(() -> scrapeK4g());
+        //executorService.submit(() -> scrapeGOGAction());
+        //executorService.submit(() -> scrapeK4g());
         //executorService.submit(() -> scrapeAmazon());
-        executorService.submit(() -> scrapeSteamAction());
-
+        //executorService.submit(() -> scrapeSteamAction());
+        //executorService.submit(() -> scrapeGamivo());
 
         // Initiates an orderly shutdown
         executorService.shutdown();
     }
+    
+    private static void scrapeGamivo() {
+        // Set up ChromeOptions
+        ChromeOptions options = new ChromeOptions();
+        options.setBinary("C:\\Users\\joomu\\AppData\\Local\\Chromium\\Application\\chrome.exe");
+        //options.addArguments("--headless");
+
+        // Set the desired ChromeDriver version
+        WebDriverManager.chromedriver().setup();
+
+        // Initialize the ChromeDriver with the specified options
+        WebDriver driver = new ChromeDriver(options);
+
+        String platform = "GAMIVO";
+        int pageNumber = 1;
+        int gamesToScrape =500;
+        while (gamesToScrape > 0) {
+            // Build the URL for the current page
+            String url = "https://www.gamivo.com/search?page=" + pageNumber +
+                         "&genres=%5B%22Action%22%5D&productTypes=%5B%22Games%22%5D&languages=%5B%22English%22%5D";
+
+            // Navigate to the Gamivo page
+            driver.get(url);
+
+            try {
+                Thread.sleep(10000); // Sleep for 40 seconds to ensure the page loads completely
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            // Find all product elements
+            List<WebElement> productElements = driver.findElements(By.cssSelector(".product-tile"));
+
+            // Iterate through the product elements and extract information
+            for (WebElement productElement : productElements) {
+                // Extract title
+                WebElement titleElement = productElement.findElement(By.cssSelector(".product-tile__product--name"));
+                String title = titleElement.getText();
+
+                // Extract price
+                WebElement priceElement = productElement.findElement(By.cssSelector(".current-price__value"));
+                String price = priceElement.getText();
+
+                // Extract image link
+                WebElement imageElement = productElement.findElement(By.cssSelector(".product-tile__banner--image img"));
+                String imageLink = imageElement.getAttribute("src");
+
+                // Print the extracted information
+                System.out.println("Title: " + title);
+                System.out.println("Price: " + price);
+                System.out.println("Image Link: " + imageLink);
+                System.out.println("Platform: " + platform);
+                System.out.println("==============================================");
+
+                // Decrement the count of remaining games to scrape
+                gamesToScrape--;
+
+                // You can add your database logic here to save the scraped data if needed
+
+                if (gamesToScrape <= 0) {
+                    break; // Exit the loop when the desired number of games is scraped
+                }
+            }
+
+            // Check if the loop should exit
+            if (gamesToScrape <= 0) {
+                break;
+            }
+
+            // Increment the page number for the next iteration
+            pageNumber++;
+        }
+
+        // Close the browser
+        driver.quit();
+    }
+    
     
 	private static void scrapeSteamAction() {
 	    int titlesToScrape = 600;
@@ -609,7 +686,4 @@ public class GamePriceScraper {
         // Close the browser
         driver.quit();
     }
-    
-    
-
 }

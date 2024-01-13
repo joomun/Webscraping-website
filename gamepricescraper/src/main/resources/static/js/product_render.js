@@ -39,8 +39,17 @@ function renderProducts(products,page) {
                   </div>
               </div>
           </div>`;
+          
       productsContainer.innerHTML += productHtml;
-      
+      const compareButtons = document.querySelectorAll('.cart-button');
+      compareButtons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+          // Handle the compare functionality for the clicked product here
+          console.log(`Compare button clicked for product at index ${index}`);
+          window.location.href = `/product-detail.html?productId=${products[index].id}`;
+    
+        });
+      });
   });
   const totalPages = Math.ceil(products.total / 12); // Assuming 'total' is the total number of products
   renderPagination(totalPages, page);
@@ -72,6 +81,8 @@ document.addEventListener('DOMContentLoaded', function() {
       fetchProducts(1);
   }
 });
+
+
 
 function fetchSearchResults(searchTerm) {
   fetch(`/search?term=${encodeURIComponent(searchTerm)}`)
