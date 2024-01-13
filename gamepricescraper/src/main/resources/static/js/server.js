@@ -203,6 +203,16 @@ app.get('/api/product/:id', async (req, res) => {
 
         if (matchingComparison.length === 0) {
             // If no matching comparison is found, send a 404 error
+            // Query to get game requirements from the game_requirements table
+            const [requirementsDetails] = await pool.query('SELECT * FROM game_requirements WHERE game_id = ?', [productId]);
+            
+            // Combine the details into a single object to send as response
+            const response = {
+                product: gamesDetails[0],
+                requirements: requirementsDetails[0] || {}
+            };
+
+            res.json(response);
             res.status(404).json({ message: 'Comparison not found' });
             return; // Stop the execution here
         }
@@ -290,15 +300,6 @@ app.get('/api/product/:id', async (req, res) => {
         }
     }
 });
-
-
-
-
-
-
-
-
-
 
 
 // Serve index.html at the root
