@@ -1,19 +1,37 @@
-# Game Price Comparison Website
+# Game Price Comparison Web Application
 
 ## Introduction
-This project is a web application designed for comparing game prices across different online platforms. It leverages advanced web technologies and big data to provide users with an efficient and scalable solution for finding the best game deals.
+This repository contains the code for a web application that compares game prices across different online vendors. It is designed to provide a user-friendly interface for gamers to find the best deals for their favorite titles.
 
-## Technologies and Methods
-- Multi-Threading
-- Maven Build Tool
-- Hibernate ORM
-- Ethical Web Scraping Practices
-- Database Management with MySQL
-- REST API Implementation
-- Node.js for Backend Scalability
+## Technologies
+- Backend: Java with Maven, Hibernate ORM, and MySQL.
+- Web Scraping: Java-based scraping of game prices.
+- Frontend: HTML, CSS, and JavaScript.
+- Server: Node.js with Express framework, MySQL2 for database interactions.
 
 ## Features
-- Price comparison across various vendors like Steam, GOG, Gamivo, K4g, and Amazon.
-- Efficient search functionality for games.
-- Detailed product pages with descriptions and vendor redirection links.
-- Robust and scalable architecture ensuring optimal performance.
+- Real-time price comparison from Steam, GOG, Gamivo, K4g, and Amazon.
+- Search functionality for finding games.
+- Product pages with detailed descriptions and links to vendors.
+- Periodic backend job execution to update game prices.
+
+## Installation
+- Clone the repository.
+- Set up the MySQL database using the provided SQL dump.
+- Ensure Node.js and Java JDK are installed.
+- Install dependencies: `npm install` and `mvn install`.
+
+## Usage
+- Start the Node.js server: `node server.js`.
+- Access the web application via `http://localhost:3000/`.
+
+## API Endpoints
+- `/api/deals`: Fetches deals from the database.
+- `/api/products`: Paginated list of games.
+- `/api/product/:id`: Details for a specific game.
+- `/search`: Search for games based on a query term.
+
+## Development Notes
+- Compilation and execution of Java components via Maven.
+- Ethical web scraping guidelines followed.
+- Connection pooling for efficient database access.
